@@ -5,14 +5,18 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 
 
 public class MainActivity extends ActionBarActivity {
+    StreamPlayer sp = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if(sp == null)
+            sp = new StreamPlayer(this);
     }
 
 
@@ -38,8 +42,18 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void play(View playButton) {
-        StreamPlayer sp = new StreamPlayer();
-        sp.Play();
+    public void search(View searchView) {
+        sp.Search("test", "test");
+    }
+
+    public void play(View controlView) {
+        Button controlButton = (Button)findViewById(R.id.controlButton);
+        if(controlButton.getText().equals("Play")) {
+            sp.Play();
+            controlButton.setText("Stop");
+        } else {
+            sp.Stop();
+            controlButton.setText("Play");
+        }
     }
 }
