@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/artistAddText"
         android:width="150dp"
-        android:text="Artist"
+        android:hint="Artist"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/titleAddText"
         android:width="150dp"
-        android:text="Title"
+        android:hint="Title"
         android:layout_alignTop="@+id/artistAddText"
         android:layout_alignRight="@+id/searchButton"
         android:layout_alignEnd="@+id/searchButton" />
@@ -33,32 +33,34 @@
         android:text="Add"
         android:id="@+id/addButton"
         android:layout_below="@+id/artistAddText"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="add"/>
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/searchText"
-        android:text="By artist and/or title"
+        android:id="@+id/artistSearchText"
+        android:hint="Artist"
         android:layout_below="@+id/addButton"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toLeftOf="@+id/searchButton"
-        android:layout_toStartOf="@+id/searchButton" />
+        android:layout_toStartOf="@+id/addButton"
+        android:layout_toLeftOf="@+id/addButton" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Search"
         android:id="@+id/searchButton"
-        android:layout_alignBottom="@+id/searchText"
+        android:layout_alignBottom="@+id/artistSearchText"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:onClick="search"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Play"
+        android:text="Start"
         android:id="@+id/controlButton"
         android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/artistAddText"
@@ -81,7 +83,8 @@
         android:id="@+id/removeButton"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/addButton"
-        android:layout_toEndOf="@+id/addButton" />
+        android:layout_toEndOf="@+id/addButton"
+        android:onClick="remove"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -102,5 +105,15 @@
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/removeButton"
         android:layout_alignEnd="@+id/removeButton" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/titleSearchText"
+        android:layout_alignTop="@+id/artistSearchText"
+        android:layout_toRightOf="@+id/artistSearchText"
+        android:layout_toLeftOf="@+id/searchButton"
+        android:layout_toStartOf="@+id/searchButton"
+        android:hint="Title" />
 
 </RelativeLayout>
