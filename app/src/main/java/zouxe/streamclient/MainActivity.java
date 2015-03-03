@@ -16,7 +16,6 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        System.out.println("CREATE");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if(sp == null)
@@ -57,7 +56,7 @@ public class MainActivity extends ActionBarActivity {
         String artist = artistText.getText().toString();
         String title = titleText.getText().toString();
 
-        sp.Search(artist, title, this);
+        sp.Search(artist, title);
 
         titleText.setText("");
         artistText.setText("");
@@ -68,48 +67,48 @@ public class MainActivity extends ActionBarActivity {
         EditText artistText = (EditText)findViewById(R.id.artistAddText);
         String title = titleText.getText().toString();
         String artist = artistText.getText().toString();
-        if(title.isEmpty() || artist.isEmpty() || title.equals("title") || artist.equals("artist"))
+        if(title.isEmpty() || artist.isEmpty())
             return;
         sp.addSong(artist, title);
         titleText.setText("");
         artistText.setText("");
-        sp.Search("", "", this);
+        sp.Search("", "");
     }
 
     public void play(View controlView) {
         Button controlButton = (Button)findViewById(R.id.controlButton);
-        if(controlButton.getText().equals("Pause"))
+        if(controlButton.getText().equals(getString(R.string.pause)))
             sp.Pause();
-        else if(controlButton.getText().equals("Start"))
+        else if(controlButton.getText().equals(getString(R.string.start)))
             sp.Start();
-        else if(controlButton.getText().equals("Play"))
+        else if(controlButton.getText().equals(getString(R.string.play)))
             sp.Play();
     }
 
     public void record(View recordView) {
         Button recordButton = (Button)findViewById(R.id.recordButton);
-        if(recordButton.getText().equals("Record")) {
+        if(recordButton.getText().equals(getString(R.string.record))) {
             if(null != recorder) {
                 recorder.record();
-                recordButton.setText("Stop");
+                recordButton.setText(R.string.stop);
             }
-        } else if(recordButton.getText().equals("Stop")){
+        } else if(recordButton.getText().equals(getString(R.string.stop))){
             if (null != recorder) {
                 recorder.stopRecord();
-                recordButton.setText("Record");
+                recordButton.setText(getString(R.string.record));
             }
         }
     }
 
     public void remove(View removeView) {
         sp.removeSong();
-        sp.Search("", "", this);
+        sp.Search("", "");
     }
 
     private class StreamPlayerLoader extends Thread {
         public void run(Activity act) {
             sp = new StreamPlayer(act);
-            sp.Search("", "", act);
+            sp.Search("", "");
         }
     }
 }

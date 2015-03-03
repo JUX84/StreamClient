@@ -45,11 +45,12 @@ class AudioRecorder {
     private void saveAudioData() {
         while (isRecording) {
             if(audioData == null)
-                audioData = new float[256];
+                audioData = new float[2048];
             if(index<1024) {
                 byte[] data = new byte[BufferElements2Rec];
                 recorder.read(data, 0, BufferElements2Rec);
-                audioData[index++] = ByteBuffer.wrap(data).getFloat();
+                for(int i = 0; i < data.length; i+=4)
+                    audioData[index++] = ByteBuffer.wrap(data,i,4).getFloat();
             }
         }
     }

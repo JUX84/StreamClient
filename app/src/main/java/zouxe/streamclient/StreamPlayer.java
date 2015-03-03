@@ -29,24 +29,23 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     private Button controlButton = null;
     private Button removeButton = null;
     private boolean isLoading = false;
+    private Activity activity = null;
 
     public StreamPlayer(Activity activity) {
+        this.activity = activity;
+        TextView status = (TextView)activity.findViewById(R.id.statusVar);
         try {
-            TextView status = (TextView)activity.findViewById(R.id.statusVar);
-            status.setText("Connecting");
+            status.setText(activity.getString(R.string.connecting));
             status.setTextColor(Color.YELLOW);
             Ice.Communicator ic = Ice.Util.initialize();
             Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h zouxe.ovh -p 10000");
             server = Player.ServerPrxHelper.checkedCast(base);
-            if (server == null) {
-                status.setText("Couldn't connect");
-                status.setTextColor(Color.RED);
-                return;
-            }
-            status.setText("Connected");
+            status.setText(activity.getString(R.string.connected));
             status.setTextColor(Color.GREEN);
             mp = new MediaPlayer();
         } catch (Ice.LocalException e) {
+            status.setText(activity.getString(R.string.disconnected));
+            status.setTextColor(Color.RED);
             System.err.println(e.getMessage());
         }
         controlButton = (Button)activity.findViewById(R.id.controlButton);
@@ -57,17 +56,17 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
         selectedSong = s;
         if(playingSong != null && playingSong.equals(selectedSong)) {
             if (isLoading) {
-                controlButton.setText("Loading");
+                controlButton.setText(activity.getString(R.string.loading));
                 controlButton.setEnabled(false);
             } else {
                 if(mp.isPlaying())
-                    controlButton.setText("Pause");
+                    controlButton.setText(activity.getString(R.string.pause));
                 else
-                    controlButton.setText("Play");
+                    controlButton.setText(activity.getString(R.string.play));
                 controlButton.setEnabled(true);
             }
         } else {
-            controlButton.setText("Start");
+            controlButton.setText(activity.getString(R.string.start));
             controlButton.setEnabled(true);
         }
         removeButton.setEnabled(true);
@@ -92,7 +91,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
             server.stopSong(token);
         }
         playingSong = selectedSong;
-        controlButton.setText("Loading");
+        controlButton.setText(activity.getString(R.string.loading));
         controlButton.setEnabled(false);
         token = server.selectSong(selectedSong);
         server.playSong(token);
@@ -112,7 +111,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     public void Pause() {
         if(server == null || token == null)
             return;
-        controlButton.setText("Play");
+        controlButton.setText(activity.getString(R.string.play));
         controlButton.setEnabled(true);
         mp.pause();
     }
@@ -121,17 +120,17 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
         if(server == null || token == null)
             return;
         if(selectedSong.equals(playingSong)) {
-            controlButton.setText("Pause");
+            controlButton.setText(activity.getString(R.string.pause));
             controlButton.setEnabled(true);
         }
         isLoading = false;
         mp.start();
     }
 
-    public void Search(String artist, String title, Activity activity) {
+    public void Search(String artist, String title) {
         if(server == null)
             return;
-        new SearchSongLoader().run(artist,title,activity);
+        new SearchSongLoader().run(artist,title);
     }
 
     public void addSong(String artist, String title) {
@@ -145,7 +144,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     }
 
     private class SearchSongLoader extends Thread {
-        public void run(String artist, String title, Activity activity) {
+        public void run(String artist, String title) {
             songs = server.searchSong(artist, title);
 
             final String c1 = "title";
