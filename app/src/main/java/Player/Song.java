@@ -54,21 +54,21 @@ public class Song implements java.lang.Cloneable, java.io.Serializable
 
         if(_r != null)
         {
-            if(artist != _r.artist)
+            if(!artist.equals(_r.artist))
             {
                 if(artist == null || _r.artist == null || !artist.equals(_r.artist))
                 {
                     return false;
                 }
             }
-            if(title != _r.title)
+            if(!title.equals(_r.title))
             {
                 if(title == null || _r.title == null || !title.equals(_r.title))
                 {
                     return false;
                 }
             }
-            if(path != _r.path)
+            if(!path.equals(_r.path))
             {
                 if(path == null || _r.path == null || !path.equals(_r.path))
                 {
@@ -94,8 +94,7 @@ public class Song implements java.lang.Cloneable, java.io.Serializable
     }
 
     public java.lang.Object
-    clone()
-    {
+    clone() throws CloneNotSupportedException {
         java.lang.Object o = null;
         try
         {

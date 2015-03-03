@@ -1,7 +1,6 @@
 package zouxe.streamclient;
 
 import android.app.Activity;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -18,23 +17,20 @@ import java.util.List;
 
 import Player.*;
 
-/**
- * Created by JUX on 17/02/2015.
- */
 public class StreamPlayer implements MediaPlayer.OnPreparedListener {
-    Ice.Communicator ic = null;
-    MediaPlayer mp = null;
-    Player.ServerPrx server = null;
-    String token = null;
-    Song[] songs = null;
-    Song selectedSong = null;
+    private MediaPlayer mp = null;
+    private Player.ServerPrx server = null;
+    private String token = null;
+    private Song[] songs = null;
+    private Song selectedSong = null;
+    private View v = null;
 
     public StreamPlayer(Activity activity) {
         try {
             TextView status = (TextView)activity.findViewById(R.id.statusVar);
             status.setText("Connecting");
             status.setTextColor(Color.YELLOW);
-            ic = Ice.Util.initialize();
+            Ice.Communicator ic = Ice.Util.initialize();
             Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h zouxe.ovh -p 10000");
             server = Player.ServerPrxHelper.checkedCast(base);
             if (server == null) {
@@ -46,13 +42,12 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
             status.setTextColor(Color.GREEN);
             mp = new MediaPlayer();
         } catch (Ice.LocalException e) {
+            System.err.println(e.getMessage());
         }
     }
 
     private void selectSong(Song s) {
         selectedSong = s;
-        if(server == null)
-            return;
     }
 
     public void removeSong() {
@@ -60,6 +55,14 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
             return;
         server.removeSong(selectedSong);
         selectedSong = null;
+    }
+
+    public Boolean isPlaying() {
+        return mp != null && mp.isPlaying();
+    }
+
+    public Boolean isSongSelected() {
+        return (selectedSong != null);
     }
 
     public Boolean Start() {
@@ -70,13 +73,15 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
         token = server.selectSong(selectedSong);
         server.playSong(token);
         String mp3 = "http://zouxe.ovh:8090/"+token+".mp3";
+        if(mp.isPlaying())
+            mp.stop();
         mp.reset();
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mp.setOnPreparedListener(this);
         try {
             mp.setDataSource(mp3);
         } catch (IOException e) {
-            System.out.println(e);
+            System.err.println(e.getMessage());
         }
         mp.prepareAsync();
         return true;
@@ -98,38 +103,7 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
         if(server == null)
             return;
 
-        songs = server.searchSong(artist, title);
-
-        final String c1 = "title";
-        final String c2 = "artist";
-
-        List data = new ArrayList<HashMap<String, String>>();
-
-        for (Song s : songs) {
-            HashMap<String, String> e = new HashMap<String, String>();
-
-            e.put(c1, s.title);
-            e.put(c2, s.artist);
-            data.add(e);
-        }
-
-        SimpleAdapter adapter = new SimpleAdapter(activity,
-                data,
-                android.R.layout.simple_list_item_2,
-                new String[]{c1, c2},
-                new int[]{android.R.id.text1,
-                        android.R.id.text2});
-        ListView lv = (ListView)activity.findViewById(R.id.listView);
-        lv.setAdapter(adapter);
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view,
-                                    int position, long id) {
-                selectSong(songs[position]);
-            }
-        });
+        new SearchSongLoader().run(artist,title,activity);
     }
 
     public void addSong(String artist, String title) {
@@ -140,5 +114,46 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
 
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+    }
+
+    private class SearchSongLoader extends Thread {
+        public void run(String artist, String title, Activity activity) {
+            songs = server.searchSong(artist, title);
+
+            final String c1 = "title";
+            final String c2 = "artist";
+
+            List<HashMap<String, String>> data = new ArrayList<>();
+
+            for (Song s : songs) {
+                HashMap<String, String> e = new HashMap<>();
+
+                e.put(c1, s.title);
+                e.put(c2, s.artist);
+                data.add(e);
+            }
+
+            SimpleAdapter adapter = new SimpleAdapter(activity,
+                    data,
+                    android.R.layout.simple_list_item_2,
+                    new String[]{c1, c2},
+                    new int[]{android.R.id.text1,
+                            android.R.id.text2});
+            ListView lv = (ListView)activity.findViewById(R.id.listView);
+            lv.setAdapter(adapter);
+
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> parent, final View view,
+                                        int position, long id) {
+                    if(v!=null)
+                        v.setBackgroundColor(Color.TRANSPARENT);
+                    view.setBackgroundColor(Color.LTGRAY);
+                    v = view;
+                    selectSong(songs[position]);
+                }
+            });
+        }
     }
 }

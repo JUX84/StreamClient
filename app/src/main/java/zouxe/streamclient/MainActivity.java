@@ -1,5 +1,7 @@
 package zouxe.streamclient;
 
+import android.app.Activity;
+import android.content.res.Configuration;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -10,24 +12,35 @@ import android.widget.EditText;
 
 
 public class MainActivity extends ActionBarActivity {
-    StreamPlayer sp = null;
+    private StreamPlayer sp = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println("CREATE");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(sp == null) {
-            sp = new StreamPlayer(this);
-            sp.Search("", "", this);
-        }
+        if(sp == null)
+            new StreamPlayerLoader().run(this);
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration conf) {
+        super.onConfigurationChanged(conf);
+        if(sp != null) {
+            Button b = (Button) findViewById(R.id.controlButton);
+            if(sp.isPlaying())
+                b.setText("Pause");
+            else if (sp.isSongSelected())
+                b.setText("Play");
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
+        //return true;
+        return false;
     }
 
     @Override
@@ -42,7 +55,8 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        //return super.onOptionsItemSelected(item);
+        return false;
     }
 
     public void search(View searchView) {
@@ -89,5 +103,12 @@ public class MainActivity extends ActionBarActivity {
     public void remove(View removeView) {
         sp.removeSong();
         sp.Search("", "", this);
+    }
+
+    private class StreamPlayerLoader extends Thread {
+        public void run(Activity act) {
+            sp = new StreamPlayer(act);
+            sp.Search("", "", act);
+        }
     }
 }
