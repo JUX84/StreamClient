@@ -60,7 +60,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start"
+        android:text="Play"
+        android:enabled="false"
         android:id="@+id/controlButton"
         android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/artistAddText"
@@ -80,6 +81,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Remove"
+        android:enabled="false"
         android:id="@+id/removeButton"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/addButton"

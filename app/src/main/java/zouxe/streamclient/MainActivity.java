@@ -1,10 +1,6 @@
 package zouxe.streamclient;
 
 import android.app.Activity;
-import android.content.res.Configuration;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,19 +9,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import java.nio.ByteBuffer;
-
 
 public class MainActivity extends ActionBarActivity {
     private StreamPlayer sp = null;
-    private AudioRecord recorder = null;
-    private Boolean isRecording = false;
-    private Thread recordingThread = null;
-    private float[] audioData = null;
-    private int index = 0;
-    private static final int RECORDER_SAMPLERATE = 8000;
-    private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
-    private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+    private AudioRecorder recorder = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,18 +21,8 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if(sp == null)
             new StreamPlayerLoader().run(this);
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration conf) {
-        super.onConfigurationChanged(conf);
-        if(sp != null) {
-            Button b = (Button) findViewById(R.id.controlButton);
-            if(sp.isPlaying())
-                b.setText("Pause");
-            else if (sp.isSongSelected())
-                b.setText("Play");
-        }
+        if(recorder == null)
+            recorder = new AudioRecorder();
     }
 
     @Override
@@ -101,58 +78,25 @@ public class MainActivity extends ActionBarActivity {
 
     public void play(View controlView) {
         Button controlButton = (Button)findViewById(R.id.controlButton);
-        if(controlButton.getText().equals("Start")) {
-            if (sp.Start())
-                controlButton.setText("Pause");
-        } else if(controlButton.getText().equals("Pause")){
+        if(controlButton.getText().equals("Pause"))
             sp.Pause();
-            controlButton.setText("Play");
-        } else if(controlButton.getText().equals("Play")){
+        else if(controlButton.getText().equals("Start"))
+            sp.Start();
+        else if(controlButton.getText().equals("Play"))
             sp.Play();
-            controlButton.setText("Pause");
-        }
     }
-
-    int BufferElements2Rec = 1024; // want to play 2048 (2K) since 2 bytes we use only 1024
-    int BytesPerElement = 2; // 2 bytes in 16bit format
 
     public void record(View recordView) {
         Button recordButton = (Button)findViewById(R.id.recordButton);
         if(recordButton.getText().equals("Record")) {
-            recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    RECORDER_SAMPLERATE, RECORDER_CHANNELS,
-                    RECORDER_AUDIO_ENCODING, BufferElements2Rec * BytesPerElement);
-
-            recorder.startRecording();
-            isRecording = true;
-            recordingThread = new Thread(new Runnable() {
-                public void run() {
-                    writeAudioDataToFloat();
-                }
-            });
-            recordingThread.start();
-            recordButton.setText("Stop");
+            if(null != recorder) {
+                recorder.record();
+                recordButton.setText("Stop");
+            }
         } else if(recordButton.getText().equals("Stop")){
             if (null != recorder) {
-                isRecording = false;
-                recorder.stop();
-                recorder.release();
-                recorder = null;
-                recordingThread = null;
-                index = 0;
-            }
-            recordButton.setText("Record");
-        }
-    }
-
-    public void writeAudioDataToFloat() {
-        while (isRecording) {
-            if(audioData == null)
-                audioData = new float[256];
-            if(index<1024) {
-                byte[] data = new byte[BufferElements2Rec];
-                recorder.read(data, 0, BufferElements2Rec);
-                audioData[index++] = ByteBuffer.wrap(data).getFloat();
+                recorder.stopRecord();
+                recordButton.setText("Record");
             }
         }
     }

@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -17,13 +18,17 @@ import java.util.List;
 
 import Player.*;
 
-public class StreamPlayer implements MediaPlayer.OnPreparedListener {
+class StreamPlayer implements MediaPlayer.OnPreparedListener {
     private MediaPlayer mp = null;
     private Player.ServerPrx server = null;
     private String token = null;
     private Song[] songs = null;
+    private Song playingSong = null;
     private Song selectedSong = null;
     private View v = null;
+    private Button controlButton = null;
+    private Button removeButton = null;
+    private boolean isLoading = false;
 
     public StreamPlayer(Activity activity) {
         try {
@@ -44,34 +49,51 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
         } catch (Ice.LocalException e) {
             System.err.println(e.getMessage());
         }
+        controlButton = (Button)activity.findViewById(R.id.controlButton);
+        removeButton = (Button)activity.findViewById(R.id.removeButton);
     }
 
     private void selectSong(Song s) {
         selectedSong = s;
+        if(playingSong != null && playingSong.equals(selectedSong)) {
+            if (isLoading) {
+                controlButton.setText("Loading");
+                controlButton.setEnabled(false);
+            } else {
+                if(mp.isPlaying())
+                    controlButton.setText("Pause");
+                else
+                    controlButton.setText("Play");
+                controlButton.setEnabled(true);
+            }
+        } else {
+            controlButton.setText("Start");
+            controlButton.setEnabled(true);
+        }
+        removeButton.setEnabled(true);
     }
 
     public void removeSong() {
         if(selectedSong == null || server == null)
             return;
+        if(playingSong==selectedSong)
+            Pause();
         server.removeSong(selectedSong);
         selectedSong = null;
+        controlButton.setEnabled(false);
+        removeButton.setEnabled(false);
     }
 
-    public Boolean isPlaying() {
-        return mp != null && mp.isPlaying();
-    }
-
-    public Boolean isSongSelected() {
-        return (selectedSong != null);
-    }
-
-    public Boolean Start() {
+    public void Start() {
         if(selectedSong == null || server == null)
-            return false;
+            return;
         if(token!=null) {
             mp.stop();
             server.stopSong(token);
         }
+        playingSong = selectedSong;
+        controlButton.setText("Loading");
+        controlButton.setEnabled(false);
         token = server.selectSong(selectedSong);
         server.playSong(token);
         String mp3 = "http://zouxe.ovh:8090/"+token+".mp3";
@@ -83,26 +105,32 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
+        isLoading = true;
         mp.prepareAsync();
-        return true;
     }
 
     public void Pause() {
         if(server == null || token == null)
             return;
+        controlButton.setText("Play");
+        controlButton.setEnabled(true);
         mp.pause();
     }
 
     public void Play() {
         if(server == null || token == null)
             return;
+        if(selectedSong.equals(playingSong)) {
+            controlButton.setText("Pause");
+            controlButton.setEnabled(true);
+        }
+        isLoading = false;
         mp.start();
     }
 
     public void Search(String artist, String title, Activity activity) {
         if(server == null)
             return;
-
         new SearchSongLoader().run(artist,title,activity);
     }
 
@@ -113,7 +141,7 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
     }
 
     public void onPrepared(MediaPlayer mp) {
-        mp.start();
+        Play();
     }
 
     private class SearchSongLoader extends Thread {
