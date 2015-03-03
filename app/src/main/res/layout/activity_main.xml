@@ -60,7 +60,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Play"
+        android:text="Select"
         android:enabled="false"
         android:id="@+id/controlButton"
         android:layout_alignParentBottom="true"
@@ -80,7 +80,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Remove"
+        android:text="a song"
         android:enabled="false"
         android:id="@+id/removeButton"
         android:layout_alignParentBottom="true"
