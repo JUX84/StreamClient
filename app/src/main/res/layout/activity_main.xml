@@ -116,4 +116,15 @@
         android:layout_toStartOf="@+id/searchButton"
         android:hint="Title" />
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record"
+        android:id="@+id/recordButton"
+        android:layout_alignBottom="@+id/statusVar"
+        android:layout_alignLeft="@+id/searchButton"
+        android:layout_alignStart="@+id/searchButton"
+        android:onClick="record" />
+
 </RelativeLayout>

@@ -68,13 +68,13 @@ public class StreamPlayer implements MediaPlayer.OnPreparedListener {
     public Boolean Start() {
         if(selectedSong == null || server == null)
             return false;
-        if(token!=null)
+        if(token!=null) {
+            mp.stop();
             server.stopSong(token);
+        }
         token = server.selectSong(selectedSong);
         server.playSong(token);
         String mp3 = "http://zouxe.ovh:8090/"+token+".mp3";
-        if(mp.isPlaying())
-            mp.stop();
         mp.reset();
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mp.setOnPreparedListener(this);
