@@ -31,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add"
+        android:enabled="false"
         android:id="@+id/addButton"
         android:layout_below="@+id/artistAddText"
         android:layout_centerHorizontal="true"
@@ -51,6 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/search"
+        android:enabled="false"
         android:id="@+id/searchButton"
         android:layout_alignBottom="@+id/artistSearchText"
         android:layout_alignParentRight="true"
@@ -93,20 +95,12 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/serverStatus"
-        android:id="@+id/statusText"
-        android:layout_alignTop="@+id/statusVar"
-        android:layout_toLeftOf="@+id/statusVar"
-        android:layout_toStartOf="@+id/statusVar" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/disconnected"
-        android:id="@+id/statusVar"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/removeButton"
-        android:layout_alignEnd="@+id/removeButton" />
+        android:id="@+id/serverStatus"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/titleAddText"
+        android:layout_alignEnd="@+id/titleAddText"
+        android:singleLine="false" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -120,14 +114,15 @@
         android:hint="@string/title" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/record"
         android:id="@+id/recordButton"
-        android:layout_alignBottom="@+id/statusVar"
-        android:layout_alignLeft="@+id/searchButton"
-        android:layout_alignStart="@+id/searchButton"
-        android:onClick="record" />
+        android:onClick="record"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/controlButton"
+        android:layout_toStartOf="@+id/controlButton" />
 
 </RelativeLayout>

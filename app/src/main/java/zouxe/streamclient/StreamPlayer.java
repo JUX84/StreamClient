@@ -42,6 +42,10 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
             Ice.Communicator ic = Ice.Util.initialize();
             Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h zouxe.ovh -p 10000");
             server = Player.ServerPrxHelper.checkedCast(base);
+            if(server == null) {
+                new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReasonCast).create().show();
+                setStatus(activity.getString(R.string.disconnected));
+            }
             setStatus(activity.getString(R.string.connected));
             mp = new MediaPlayer();
             Button b = (Button)activity.findViewById(R.id.addButton);
@@ -49,7 +53,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
             b = (Button)activity.findViewById(R.id.searchButton);
             b.setEnabled(true);
         } catch (Ice.LocalException e) {
-            new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReason).create().show();
+            new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReasonServer).create().show();
             setStatus(activity.getString(R.string.disconnected));
             System.err.println(e.getMessage());
         }
