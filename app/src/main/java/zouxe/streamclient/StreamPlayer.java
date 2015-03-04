@@ -1,6 +1,7 @@
 package zouxe.streamclient;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -33,23 +34,30 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 
     public StreamPlayer(Activity activity) {
         this.activity = activity;
-        TextView status = (TextView)activity.findViewById(R.id.statusVar);
+
+        controlButton = (Button)activity.findViewById(R.id.controlButton);
+        removeButton = (Button)activity.findViewById(R.id.removeButton);
         try {
-            status.setText(activity.getString(R.string.connecting));
-            status.setTextColor(Color.YELLOW);
+            setStatus(activity.getString(R.string.connecting));
             Ice.Communicator ic = Ice.Util.initialize();
             Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h zouxe.ovh -p 10000");
             server = Player.ServerPrxHelper.checkedCast(base);
-            status.setText(activity.getString(R.string.connected));
-            status.setTextColor(Color.GREEN);
+            setStatus(activity.getString(R.string.connected));
             mp = new MediaPlayer();
+            Button b = (Button)activity.findViewById(R.id.addButton);
+            b.setEnabled(true);
+            b = (Button)activity.findViewById(R.id.searchButton);
+            b.setEnabled(true);
         } catch (Ice.LocalException e) {
-            status.setText(activity.getString(R.string.disconnected));
-            status.setTextColor(Color.RED);
+            new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReason).create().show();
+            setStatus(activity.getString(R.string.disconnected));
             System.err.println(e.getMessage());
         }
-        controlButton = (Button)activity.findViewById(R.id.controlButton);
-        removeButton = (Button)activity.findViewById(R.id.removeButton);
+    }
+
+    private void setStatus(String str) {
+        TextView status = (TextView)activity.findViewById(R.id.serverStatus);
+        status.setText(activity.getString(R.string.serverStatus)+" "+str);
     }
 
     private void selectSong(Song s) {
