@@ -5,6 +5,7 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_reconnect">Reconnect</string>
     <string name="select">Select</string>
     <string name="start">Start</string>
     <string name="pause">Pause</string>
@@ -19,11 +20,16 @@
     <string name="stop">Stop</string>
     <string name="serverStatus">Server status:</string>
     <string name="disconnected">Disconnected</string>
-    <string name="disconnectedReasonServer">Could not connect to zouxe.ovh.\nCheck your internet connection.\n\nIf you have access to internet,\nthen the server may be unavalaible at the moment.\nTry again later.</string>
-    <string name="disconnectedReasonCast">Connection to zouxe.ovh successful but\nthe ICE interface does not match</string>
+    <string name="connectionTo">Connection to</string>
+    <string name="success">was successful</string>
+    <string name="fail">failed</string>
+    <string name="disconnectedReasonServer">Check your internet connection.\n\nIf you have access to internet,\nthen the server may be unavailable at the moment.\nTry again later.</string>
+    <string name="disconnectedReasonCast">The ICE interface does not match</string>
     <string name="connecting">Connecting</string>
     <string name="connected">Connected</string>
     <string name="loading">Loading</string>
+    <string name="address">Address</string>
+    <string name="port">Port</string>
     <string name="accept">Accept</string>
     <string name="cancel">Cancel</string>
 </resources>

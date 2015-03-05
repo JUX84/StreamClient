@@ -34,6 +34,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     private Activity activity = null;
     private String address = "zouxe.ovh";
     private String port = "10000";
+    private boolean isWorking = false;
 
     public StreamPlayer(Activity activity) {
         this.activity = activity;
@@ -50,7 +51,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
             Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h " + address + " -p " + port);
             server = Player.ServerPrxHelper.checkedCast(base);
             if(server == null) {
-                new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReasonCast).create().show();
+                new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo)+" "+address+" "+activity.getText(R.string.success)+".\n"+activity.getText(R.string.disconnectedReasonCast)).create().show();
                 setStatus(activity.getString(R.string.disconnected));
             }
             setStatus(activity.getString(R.string.connected));
@@ -63,11 +64,16 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
             titleAdd.setEnabled(true);
             artistSearch.setEnabled(true);
             titleSearch.setEnabled(true);
+            isWorking = true;
         } catch (Ice.LocalException e) {
-            new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReasonServer).create().show();
+            new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo)+" "+address+" "+activity.getText(R.string.fail)+".\n"+activity.getText(R.string.disconnectedReasonServer)).create().show();
             setStatus(activity.getString(R.string.disconnected));
             System.err.println(e.getMessage());
         }
+    }
+
+    public boolean isWorking() {
+        return isWorking;
     }
 
     public String getAddress() {

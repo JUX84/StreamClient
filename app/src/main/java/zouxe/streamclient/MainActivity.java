@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,8 +23,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(sp == null)
-            new StreamPlayerLoader().run(this);
+        connect();
         if(recorder == null)
             recorder = new AudioRecorder();
     }
@@ -40,11 +40,11 @@ public class MainActivity extends ActionBarActivity {
         if(id == R.id.action_settings) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             LayoutInflater inflater = getLayoutInflater();
-            final View v = inflater.inflate(R.layout.settings_dialog);
-            TextView serverView = (TextView)v.findViewById(R.id.server);
-            serverView.setHint(sp.getAddress());
-            TextView portView = (TextView)v.findViewById(R.id.server);
-            portView.setHint(sp.getPort());
+            final View v = inflater.inflate(R.layout.settings_dialog, null);
+            TextView tv = (TextView)v.findViewById(R.id.server);
+            tv.setHint(getText(R.string.address) + " (" + sp.getAddress() + ")");
+            tv = (TextView)v.findViewById(R.id.port);
+            tv.setHint(getText(R.string.port) + " (" + sp.getPort() + ")");
             builder.setView(v)
                     .setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
                         @Override
@@ -66,8 +66,15 @@ public class MainActivity extends ActionBarActivity {
                     })
                     .show();
             return true;
+        } else if(id == R.id.action_reconnect) {
+            connect();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void connect() {
+        if(sp == null || !sp.isWorking())
+            new StreamPlayerLoader().run(this);
     }
 
     public void search(View searchView) {
