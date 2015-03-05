@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -31,16 +32,22 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     private Button removeButton = null;
     private boolean isLoading = false;
     private Activity activity = null;
+    private String address = "zouxe.ovh";
+    private String port = "10000";
 
     public StreamPlayer(Activity activity) {
         this.activity = activity;
 
         controlButton = (Button)activity.findViewById(R.id.controlButton);
         removeButton = (Button)activity.findViewById(R.id.removeButton);
+        EditText artistAdd = (EditText)activity.findViewById(R.id.artistAddText);
+        EditText titleAdd = (EditText)activity.findViewById(R.id.titleAddText);
+        EditText artistSearch = (EditText)activity.findViewById(R.id.artistSearchText);
+        EditText titleSearch = (EditText)activity.findViewById(R.id.titleSearchText);
         try {
             setStatus(activity.getString(R.string.connecting));
             Ice.Communicator ic = Ice.Util.initialize();
-            Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h zouxe.ovh -p 10000");
+            Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h " + address + " -p " + port);
             server = Player.ServerPrxHelper.checkedCast(base);
             if(server == null) {
                 new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReasonCast).create().show();
@@ -52,11 +59,33 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
             b.setEnabled(true);
             b = (Button)activity.findViewById(R.id.searchButton);
             b.setEnabled(true);
+            artistAdd.setEnabled(true);
+            titleAdd.setEnabled(true);
+            artistSearch.setEnabled(true);
+            titleSearch.setEnabled(true);
         } catch (Ice.LocalException e) {
             new AlertDialog.Builder(activity).setMessage(R.string.disconnectedReasonServer).create().show();
             setStatus(activity.getString(R.string.disconnected));
             System.err.println(e.getMessage());
         }
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setAddress(String address) {
+        if(!address.isEmpty())
+            this.address = address;
+    }
+
+    public void setPort(String port) {
+        if(!port.isEmpty())
+            this.port = port;
     }
 
     private void setStatus(String str) {

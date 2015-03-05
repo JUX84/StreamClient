@@ -1,12 +1,17 @@
 package zouxe.streamclient;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -21,6 +26,48 @@ public class MainActivity extends ActionBarActivity {
             new StreamPlayerLoader().run(this);
         if(recorder == null)
             recorder = new AudioRecorder();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.action_settings) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            LayoutInflater inflater = getLayoutInflater();
+            final View v = inflater.inflate(R.layout.settings_dialog);
+            TextView serverView = (TextView)v.findViewById(R.id.server);
+            serverView.setHint(sp.getAddress());
+            TextView portView = (TextView)v.findViewById(R.id.server);
+            portView.setHint(sp.getPort());
+            builder.setView(v)
+                    .setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            if(sp != null) {
+                                TextView tv = (TextView)v.findViewById(R.id.server);
+                                String str = tv.getText().toString();
+                                sp.setAddress(str);
+                                tv = (TextView)v.findViewById(R.id.port);
+                                str = tv.getText().toString();
+                                sp.setPort(str);
+                            }
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    })
+                    .show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void search(View searchView) {
