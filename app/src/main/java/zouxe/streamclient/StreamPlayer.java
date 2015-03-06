@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import Player.*;
 
@@ -33,7 +34,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     private boolean isLoading = false;
     private Activity activity = null;
     private String address = "zouxe.ovh";
-    private String port = "10000";
+    private String port = "10001";
     private boolean isWorking = false;
 
     public StreamPlayer(Activity activity) {
@@ -48,7 +49,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
         try {
             setStatus(activity.getString(R.string.connecting));
             Ice.Communicator ic = Ice.Util.initialize();
-            Ice.ObjectPrx base = ic.stringToProxy("StreamServer:tcp -h " + address + " -p " + port);
+            Ice.ObjectPrx base = ic.stringToProxy("StreamMetaServer:tcp -h " + address + " -p " + port);
             server = Player.ServerPrxHelper.checkedCast(base);
             if(server == null) {
                 new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo)+" "+address+" "+activity.getText(R.string.success)+".\n"+activity.getText(R.string.disconnectedReasonCast)).create().show();
@@ -73,6 +74,14 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     }
 
     public boolean isWorking() {
+        try {
+            server.ice_ping();
+        } catch (Exception e) {
+            isWorking = false;
+            new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo)+" "+address+" "+activity.getText(R.string.fail)+".\n"+activity.getText(R.string.disconnectedReasonServer)).create().show();
+            setStatus(activity.getString(R.string.disconnected));
+            System.err.println(e.getMessage());
+        }
         return isWorking;
     }
 
@@ -115,12 +124,13 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
         } else {
             controlButton.setText(activity.getString(R.string.start));
             controlButton.setEnabled(true);
+            removeButton.setText(activity.getString(R.string.remove));
         }
         removeButton.setEnabled(true);
     }
 
     public void removeSong() {
-        if(selectedSong == null || server == null)
+        if(selectedSong == null || server == null || !isWorking())
             return;
         if(playingSong==selectedSong)
             Pause();
@@ -131,7 +141,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     }
 
     public void Start() {
-        if(selectedSong == null || server == null)
+        if(selectedSong == null || server == null || !isWorking())
             return;
         if(token!=null) {
             mp.stop();
@@ -156,7 +166,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     }
 
     public void Pause() {
-        if(server == null || token == null)
+        if(server == null || token == null || !isWorking())
             return;
         controlButton.setText(activity.getString(R.string.play));
         controlButton.setEnabled(true);
@@ -164,7 +174,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     }
 
     public void Play() {
-        if(server == null || token == null)
+        if(server == null || token == null || !isWorking())
             return;
         if(selectedSong.equals(playingSong)) {
             controlButton.setText(activity.getString(R.string.pause));
@@ -175,13 +185,13 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
     }
 
     public void Search(String artist, String title) {
-        if(server == null)
+        if(server == null || !isWorking())
             return;
         new SearchSongLoader().run(artist,title);
     }
 
     public void addSong(String artist, String title) {
-        if(server == null)
+        if(server == null || !isWorking())
             return;
         server.addSong(new Song(artist, title, artist+"."+title+".mp3"));
     }
@@ -194,30 +204,19 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
         public void run(String artist, String title) {
             songs = server.searchSong(artist, title);
 
-            final String c1 = "title";
-            final String c2 = "artist";
-
-            List<HashMap<String, String>> data = new ArrayList<>();
-
-            for (Song s : songs) {
-                HashMap<String, String> e = new HashMap<>();
-
-                e.put(c1, s.title);
-                e.put(c2, s.artist);
-                data.add(e);
-            }
-
-            SimpleAdapter adapter = new SimpleAdapter(activity,
-                    data,
-                    android.R.layout.simple_list_item_2,
-                    new String[]{c1, c2},
-                    new int[]{android.R.id.text1,
-                            android.R.id.text2});
             ListView lv = (ListView)activity.findViewById(R.id.listView);
+
+            List<Map<String,String>> array = new ArrayList<>();
+            for (Song s : songs)
+                array.add(putData(s.artist, s.title));
+
+            String[] from = {"title", "artist"};
+            int[] to = {android.R.id.text1, android.R.id.text2};
+
+            SimpleAdapter adapter = new SimpleAdapter(activity, array, android.R.layout.simple_list_item_2, from, to);
             lv.setAdapter(adapter);
 
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
                 @Override
                 public void onItemClick(AdapterView<?> parent, final View view,
                                         int position, long id) {
@@ -228,6 +227,12 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
                     selectSong(songs[position]);
                 }
             });
+        }
+        private HashMap<String, String> putData(String artist, String title) {
+            HashMap<String, String> item = new HashMap<>();
+            item.put("artist", artist);
+            item.put("title", title);
+            return item;
         }
     }
 }
