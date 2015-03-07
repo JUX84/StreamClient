@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -69,19 +70,23 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
         } catch (Ice.LocalException e) {
             new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo)+" "+address+" "+activity.getText(R.string.fail)+".\n"+activity.getText(R.string.disconnectedReasonServer)).create().show();
             setStatus(activity.getString(R.string.disconnected));
-            System.err.println(e.getMessage());
+            Log.e("StreamPlayer", e.getMessage());
         }
     }
 
     public boolean isWorking() {
-        try {
-            server.ice_ping();
-        } catch (Exception e) {
-            isWorking = false;
-            new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo)+" "+address+" "+activity.getText(R.string.fail)+".\n"+activity.getText(R.string.disconnectedReasonServer)).create().show();
-            setStatus(activity.getString(R.string.disconnected));
-            System.err.println(e.getMessage());
-        }
+	    if(server != null) {
+		    try {
+			    server.ice_ping();
+		    } catch (Ice.LocalException e) {
+			    isWorking = false;
+			    new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
+			    setStatus(activity.getString(R.string.disconnected));
+			    Log.e("StreamPlayer", e.getMessage());
+		    }
+	    } else {
+		    isWorking = false;
+	    }
         return isWorking;
     }
 
@@ -148,8 +153,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
             server.stopSong(token);
         }
         playingSong = selectedSong;
-        controlButton.setText(activity.getString(R.string.loading));
-        controlButton.setEnabled(false);
         token = server.selectSong(selectedSong);
         server.playSong(token);
         String mp3 = "http://zouxe.ovh:8090/"+token+".mp3";
@@ -159,8 +162,13 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
         try {
             mp.setDataSource(mp3);
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            Log.w("StreamPlayer", e.getMessage());
+	        mp.reset();
+	        isLoading = false;
+	        return;
         }
+	    controlButton.setText(activity.getString(R.string.loading));
+	    controlButton.setEnabled(false);
         isLoading = true;
         mp.prepareAsync();
     }
