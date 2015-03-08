@@ -2,7 +2,6 @@ package zouxe.streamclient;
 
 import Ice.Current;
 import Ice.InitializationData;
-import Ice.RouterPrx;
 import Player.Monitor;
 import Player.Song;
 import Player._MonitorDisp;
@@ -11,18 +10,15 @@ import android.app.AlertDialog;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.ConnectivityManager;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
 import java.io.IOException;
-import java.net.NetPermission;
 import java.util.*;
 
 class StreamPlayer implements MediaPlayer.OnPreparedListener {
-	class MonitorI extends _MonitorDisp {
+	private class MonitorI extends _MonitorDisp {
 		public void report(String str, Current c) {
 			Log.v("Notif", str);
 		}
@@ -104,14 +100,14 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			IceStorm.TopicPrx topic;
 			try {
 				topic = topicManager.retrieve("StreamPlayerNotifs");
-				java.util.Map qos = null;
 				try {
-					topic.subscribeAndGetPublisher(qos, proxy);
+					topic.subscribeAndGetPublisher(null, proxy);
 				} catch(Exception e) {
 					Log.e("Ice", e.getMessage());
 				}
 			}
 			catch (IceStorm.NoSuchTopic ex) {
+				Log.e("Ice", ex.getMessage());
 			}
 		} catch (Ice.LocalException e) {
 			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
