@@ -32,8 +32,9 @@ public final class SongSeqHelper
         else
         {
             __os.writeSize(__v.length);
-            for (Song a__v : __v) {
-                a__v.__write(__os);
+            for(int __i0 = 0; __i0 < __v.length; __i0++)
+            {
+                __v[__i0].__write(__os);
             }
         }
     }

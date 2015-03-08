@@ -1,22 +1,33 @@
 package zouxe.streamclient;
 
+import Ice.Current;
+import Ice.InitializationData;
+import Ice.RouterPrx;
+import Player.Monitor;
 import Player.Song;
+import Player._MonitorDisp;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.NetPermission;
+import java.util.*;
 
 class StreamPlayer implements MediaPlayer.OnPreparedListener {
+	class MonitorI extends _MonitorDisp {
+		public void report(String str, Current c) {
+			Log.v("Notif", str);
+		}
+	}
+
 	private MediaPlayer mp = null;
 	private Player.ServerPrx server = null;
 	private String token = null;
@@ -42,8 +53,31 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		EditText artistSearch = (EditText) activity.findViewById(R.id.artistSearchText);
 		EditText titleSearch = (EditText) activity.findViewById(R.id.titleSearchText);
 		try {
+			InitializationData initData = new InitializationData();
+			initData.properties = Ice.Util.createProperties();
+			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h zouxe.ovh -p 4063");
+			initData.properties.setProperty("Ice.ACM.Client", "0");
+			initData.properties.setProperty("Ice.RetryIntervals" ,"1");
+			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h zouxe.ovh -p 4063");
+			Ice.Communicator ic = Ice.Util.initialize(initData);
+			Ice.RouterPrx defaultRouter = ic.getDefaultRouter();
+			Glacier2.RouterPrx router = Glacier2.RouterPrxHelper.checkedCast(defaultRouter);
+			String username = "zouxe";
+			String password = "zouxe";
+			Glacier2.SessionPrx session;
+			try
+			{
+				session = router.createSession(username, password);
+			}
+			catch(Glacier2.PermissionDeniedException ex)
+			{
+				Log.e("Glacier2", "permission denied: " + ex.reason);
+			}
+			catch(Glacier2.CannotCreateSessionException ex)
+			{
+				Log.e("Glacier2", "cannot create session: " + ex.reason);
+			}
 			setStatus(activity.getString(R.string.connecting));
-			Ice.Communicator ic = Ice.Util.initialize();
 			Ice.ObjectPrx base = ic.stringToProxy("StreamMetaServer:tcp -h " + address + " -p " + port);
 			server = Player.ServerPrxHelper.checkedCast(base);
 			if (server == null) {
@@ -61,6 +95,24 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			artistSearch.setEnabled(true);
 			titleSearch.setEnabled(true);
 			isWorking = true;
+			Ice.ObjectPrx obj = ic.stringToProxy("StreamIceStorm/TopicManager:tcp -h " + address + " -p 9999");
+			IceStorm.TopicManagerPrx topicManager = IceStorm.TopicManagerPrxHelper.checkedCast(obj);
+			Ice.ObjectAdapter adapter = ic.createObjectAdapterWithRouter("MonitorAdapter", defaultRouter);
+			Monitor monitor = new MonitorI();
+			Ice.ObjectPrx proxy = adapter.addWithUUID(monitor).ice_oneway();
+			adapter.activate();
+			IceStorm.TopicPrx topic;
+			try {
+				topic = topicManager.retrieve("StreamPlayerNotifs");
+				java.util.Map qos = null;
+				try {
+					topic.subscribeAndGetPublisher(qos, proxy);
+				} catch(Exception e) {
+					Log.e("Ice", e.getMessage());
+				}
+			}
+			catch (IceStorm.NoSuchTopic ex) {
+			}
 		} catch (Ice.LocalException e) {
 			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 			setStatus(activity.getString(R.string.disconnected));
