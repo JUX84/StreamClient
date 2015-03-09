@@ -1,6 +1,7 @@
 package zouxe.streamclient;
 
 import Ice.Current;
+import Ice.Identity;
 import Ice.InitializationData;
 import Player.Monitor;
 import Player.Song;
@@ -35,7 +36,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private Button removeButton = null;
 	private boolean isLoading = false;
 	private Activity activity = null;
-	private String address = "zouxe.ovh";
+	private String address = "80.240.129.188";
 	private String port = "10001";
 	private boolean isWorking = false;
 
@@ -51,10 +52,14 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		try {
 			InitializationData initData = new InitializationData();
 			initData.properties = Ice.Util.createProperties();
-			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h zouxe.ovh -p 4063");
+			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
 			initData.properties.setProperty("Ice.ACM.Client", "0");
-			initData.properties.setProperty("Ice.RetryIntervals" ,"1");
-			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h zouxe.ovh -p 4063");
+			initData.properties.setProperty("Ice.ACM.Server", "0");
+			initData.properties.setProperty("Ice.RetryIntervals" ,"-1");
+			/*initData.properties.setProperty("Ice.Trace.Network", "1");
+			initData.properties.setProperty("Ice.Trace.Protocol", "1");
+			initData.properties.setProperty("Ice.Warn.Connections", "1");*/
+			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
 			Ice.Communicator ic = Ice.Util.initialize(initData);
 			Ice.RouterPrx defaultRouter = ic.getDefaultRouter();
 			Glacier2.RouterPrx router = Glacier2.RouterPrxHelper.checkedCast(defaultRouter);
@@ -91,11 +96,11 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			artistSearch.setEnabled(true);
 			titleSearch.setEnabled(true);
 			isWorking = true;
-			Ice.ObjectPrx obj = ic.stringToProxy("StreamIceStorm/TopicManager:tcp -h " + address + " -p 9999");
+			Ice.ObjectPrx obj = ic.stringToProxy("IceStorm/TopicManager:tcp -h " + address + " -p 9999");
 			IceStorm.TopicManagerPrx topicManager = IceStorm.TopicManagerPrxHelper.checkedCast(obj);
-			Ice.ObjectAdapter adapter = ic.createObjectAdapterWithRouter("MonitorAdapter", defaultRouter);
+			Ice.ObjectAdapter adapter = ic.createObjectAdapterWithRouter("MonitorAdapter", router);
 			Monitor monitor = new MonitorI();
-			Ice.ObjectPrx proxy = adapter.addWithUUID(monitor).ice_oneway();
+			Ice.ObjectPrx proxy = adapter.add(monitor, new Identity("test", router.getCategoryForClient())).ice_twoway();
 			adapter.activate();
 			IceStorm.TopicPrx topic;
 			try {
@@ -103,7 +108,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				try {
 					topic.subscribeAndGetPublisher(null, proxy);
 				} catch(Exception e) {
-					Log.e("Ice", e.getMessage());
 				}
 			}
 			catch (IceStorm.NoSuchTopic ex) {
@@ -124,7 +128,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				isWorking = false;
 				new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 				setStatus(activity.getString(R.string.disconnected));
-				Log.e("StreamPlayer", e.getMessage());
 			}
 		} else {
 			isWorking = false;

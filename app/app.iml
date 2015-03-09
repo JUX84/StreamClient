@@ -88,7 +88,7 @@
     <orderEntry type="library" exported="" name="zeroc-ice-3.5" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-21.0.3" level="project" />
-    <orderEntry type="library" name="IceStorm" level="project" />
-    <orderEntry type="library" name="Glacier2" level="project" />
+    <orderEntry type="library" exported="" name="Glacier2" level="project" />
+    <orderEntry type="library" exported="" name="IceStorm" level="project" />
   </component>
 </module>
