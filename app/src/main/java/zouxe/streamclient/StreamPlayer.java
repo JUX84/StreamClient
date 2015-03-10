@@ -21,7 +21,9 @@ import java.util.*;
 class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private class MonitorI extends _MonitorDisp {
 		public void report(String str, Current c) {
-			Log.v("Notif", str);
+			if (!str.equals(lastAction))
+				Log.v("Notification", str);
+			lastAction = "";
 		}
 	}
 
@@ -39,68 +41,88 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private String address = "80.240.129.188";
 	private String port = "10001";
 	private boolean isWorking = false;
+	private Ice.Communicator communicator = null;
+	private Glacier2.RouterPrx router = null;
+	private boolean connected = false;
+	private String lastAction = "";
 
 	public StreamPlayer(Activity activity) {
 		this.activity = activity;
 
 		controlButton = (Button) activity.findViewById(R.id.controlButton);
 		removeButton = (Button) activity.findViewById(R.id.removeButton);
-		EditText artistAdd = (EditText) activity.findViewById(R.id.artistAddText);
-		EditText titleAdd = (EditText) activity.findViewById(R.id.titleAddText);
-		EditText artistSearch = (EditText) activity.findViewById(R.id.artistSearchText);
-		EditText titleSearch = (EditText) activity.findViewById(R.id.titleSearchText);
+		try {
+			setStatus(activity.getString(R.string.connecting));
+			initIce();
+			initRouter();
+			initServer();
+			if (isWorking) {
+				mp = new MediaPlayer();
+				setStatus(activity.getString(R.string.connected));
+				setControlsEnabled(true);
+			} else {
+				setStatus(activity.getString(R.string.disconnected));
+			}
+			initIceStorm();
+		} catch (Ice.LocalException e) {
+			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
+			setStatus(activity.getString(R.string.disconnected));
+			Log.e("StreamPlayer", e.toString());
+		}
+	}
+
+	private void initIce() {
 		try {
 			InitializationData initData = new InitializationData();
 			initData.properties = Ice.Util.createProperties();
 			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
 			initData.properties.setProperty("Ice.ACM.Client", "0");
-			initData.properties.setProperty("Ice.ACM.Server", "0");
 			initData.properties.setProperty("Ice.RetryIntervals" ,"-1");
-			/*initData.properties.setProperty("Ice.Trace.Network", "1");
-			initData.properties.setProperty("Ice.Trace.Protocol", "1");
-			initData.properties.setProperty("Ice.Warn.Connections", "1");*/
 			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
-			Ice.Communicator ic = Ice.Util.initialize(initData);
-			Ice.RouterPrx defaultRouter = ic.getDefaultRouter();
-			Glacier2.RouterPrx router = Glacier2.RouterPrxHelper.checkedCast(defaultRouter);
-			String username = "zouxe";
-			String password = "zouxe";
-			Glacier2.SessionPrx session;
-			try
-			{
-				session = router.createSession(username, password);
+			communicator = Ice.Util.initialize(initData);
+		} catch (Exception e) {
+			Log.e("Ice", e.toString());
+		}
+	}
+
+	private void initRouter() {
+		if (communicator == null)
+			return;
+		try {
+			Ice.RouterPrx defaultRouter = communicator.getDefaultRouter();
+			router = Glacier2.RouterPrxHelper.checkedCast(defaultRouter);
+			try {
+				router.createSession("zouxe", "zouxe");
+				connected = true;
+			} catch(Exception e) {
+				Log.e("Glacier2Login", e.toString());
 			}
-			catch(Glacier2.PermissionDeniedException ex)
-			{
-				Log.e("Glacier2", "permission denied: " + ex.reason);
-			}
-			catch(Glacier2.CannotCreateSessionException ex)
-			{
-				Log.e("Glacier2", "cannot create session: " + ex.reason);
-			}
-			setStatus(activity.getString(R.string.connecting));
-			Ice.ObjectPrx base = ic.stringToProxy("StreamMetaServer:tcp -h " + address + " -p " + port);
+		} catch (Exception e) {
+			Log.e("Glacier2", e.toString());
+		}
+	}
+
+	private void initServer() {
+		if (communicator == null || !connected)
+			return;
+		try {
+			Ice.ObjectPrx base = communicator.stringToProxy("StreamMetaServer:tcp -h " + address + " -p " + port);
 			server = Player.ServerPrxHelper.checkedCast(base);
-			if (server == null) {
-				new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.success) + ".\n" + activity.getText(R.string.disconnectedReasonCast)).create().show();
-				setStatus(activity.getString(R.string.disconnected));
-			}
-			setStatus(activity.getString(R.string.connected));
-			mp = new MediaPlayer();
-			Button b = (Button) activity.findViewById(R.id.addButton);
-			b.setEnabled(true);
-			b = (Button) activity.findViewById(R.id.searchButton);
-			b.setEnabled(true);
-			artistAdd.setEnabled(true);
-			titleAdd.setEnabled(true);
-			artistSearch.setEnabled(true);
-			titleSearch.setEnabled(true);
 			isWorking = true;
-			Ice.ObjectPrx obj = ic.stringToProxy("IceStorm/TopicManager:tcp -h " + address + " -p 9999");
+		} catch (Exception e) {
+			Log.e("StreamMetaServer", e.toString());
+		}
+	}
+
+	private void initIceStorm() {
+		if (communicator == null || !connected)
+			return;
+		try {
+			Ice.ObjectPrx obj = communicator.stringToProxy("IceStorm/TopicManager:tcp -h " + address + " -p 9999");
 			IceStorm.TopicManagerPrx topicManager = IceStorm.TopicManagerPrxHelper.checkedCast(obj);
-			Ice.ObjectAdapter adapter = ic.createObjectAdapterWithRouter("MonitorAdapter", router);
+			Ice.ObjectAdapter adapter = communicator.createObjectAdapterWithRouter("MonitorAdapter", router);
 			Monitor monitor = new MonitorI();
-			Ice.ObjectPrx proxy = adapter.add(monitor, new Identity("test", router.getCategoryForClient())).ice_twoway();
+			Ice.ObjectPrx proxy = adapter.add(monitor, new Identity("default", router.getCategoryForClient())).ice_twoway();
 			adapter.activate();
 			IceStorm.TopicPrx topic;
 			try {
@@ -108,29 +130,45 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				try {
 					topic.subscribeAndGetPublisher(null, proxy);
 				} catch(Exception e) {
+					Log.e("IceStormSubscribe", e.toString());
 				}
+			} catch (Exception e) {
+				Log.e("IceStormTopic", e.toString());
 			}
-			catch (IceStorm.NoSuchTopic ex) {
-				Log.e("Ice", ex.getMessage());
-			}
-		} catch (Ice.LocalException e) {
-			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
-			setStatus(activity.getString(R.string.disconnected));
-			Log.e("StreamPlayer", e.getMessage());
+		} catch (Exception e) {
+			Log.e("IceStorm", e.toString());
 		}
 	}
 
+	private void setControlsEnabled(boolean b) {
+		EditText artistAdd = (EditText) activity.findViewById(R.id.artistAddText);
+		EditText titleAdd = (EditText) activity.findViewById(R.id.titleAddText);
+		EditText artistSearch = (EditText) activity.findViewById(R.id.artistSearchText);
+		EditText titleSearch = (EditText) activity.findViewById(R.id.titleSearchText);
+		Button addButton = (Button) activity.findViewById(R.id.addButton);
+		Button searchButton = (Button) activity.findViewById(R.id.searchButton);
+		artistAdd.setEnabled(b);
+		titleAdd.setEnabled(b);
+		artistSearch.setEnabled(b);
+		titleSearch.setEnabled(b);
+		addButton.setEnabled(b);
+		searchButton.setEnabled(b);
+	}
+
 	public boolean isNotWorking() {
-		if (server != null) {
+		if (server == null) {
+			isWorking = false;
+		} else {
 			try {
 				server.ice_ping();
 			} catch (Ice.LocalException e) {
+				server = null;
 				isWorking = false;
+				connected = false;
+				setControlsEnabled(false);
 				new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 				setStatus(activity.getString(R.string.disconnected));
 			}
-		} else {
-			isWorking = false;
 		}
 		return !isWorking;
 	}
@@ -184,6 +222,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			return;
 		if (playingSong == selectedSong)
 			Pause();
+		lastAction = "The song "+selectedSong.title+" by "+selectedSong.artist+" was removed";
 		server.removeSong(selectedSong);
 		selectedSong = null;
 		controlButton.setEnabled(false);
@@ -246,6 +285,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	public void addSong(String artist, String title) {
 		if (server == null || isNotWorking())
 			return;
+		lastAction = "The song "+title+" by "+artist+" was added";
 		server.addSong(new Song(artist, title, artist + "." + title + ".mp3"));
 	}
 
