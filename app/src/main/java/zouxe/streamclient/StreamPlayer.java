@@ -45,29 +45,35 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private Glacier2.RouterPrx router = null;
 	private boolean connected = false;
 	private String lastAction = "";
+	private ListView lv = null;
 
 	public StreamPlayer(Activity activity) {
 		this.activity = activity;
 
 		controlButton = (Button) activity.findViewById(R.id.controlButton);
 		removeButton = (Button) activity.findViewById(R.id.removeButton);
-		try {
-			setStatus(activity.getString(R.string.connecting));
+		lv = (ListView) activity.findViewById(R.id.listView);
+
+		mp = new MediaPlayer();
+
+		connect();
+	}
+
+	public void connect() {
+		if(isWorking)
+			return;
+		setStatus(activity.getString(R.string.connecting));
+		if (communicator == null)
 			initIce();
-			initRouter();
-			initServer();
-			if (isWorking) {
-				mp = new MediaPlayer();
-				setStatus(activity.getString(R.string.connected));
-				setControlsEnabled(true);
-			} else {
-				setStatus(activity.getString(R.string.disconnected));
-			}
-			initIceStorm();
-		} catch (Ice.LocalException e) {
-			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
+		initRouter();
+		initServer();
+		initIceStorm();
+		if (isWorking) {
+			setStatus(activity.getString(R.string.connected));
+			setControlsEnabled(true);
+			Search("", "");
+		} else {
 			setStatus(activity.getString(R.string.disconnected));
-			Log.e("StreamPlayer", e.toString());
 		}
 	}
 
@@ -161,11 +167,14 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		} else {
 			try {
 				server.ice_ping();
-			} catch (Ice.LocalException e) {
+			} catch (Exception e) {
 				server = null;
 				isWorking = false;
 				connected = false;
 				setControlsEnabled(false);
+				controlButton.setEnabled(false);
+				removeButton.setEnabled(false);
+				lv.setAdapter(null);
 				new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 				setStatus(activity.getString(R.string.disconnected));
 			}
@@ -218,7 +227,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	public void removeSong() {
-		if (selectedSong == null || server == null || isNotWorking())
+		if (selectedSong == null || isNotWorking())
 			return;
 		if (playingSong == selectedSong)
 			Pause();
@@ -230,7 +239,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	public void Start() {
-		if (selectedSong == null || server == null || isNotWorking())
+		if (selectedSong == null || isNotWorking())
 			return;
 		if (token != null) {
 			mp.stop();
@@ -258,7 +267,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	public void Pause() {
-		if (server == null || token == null || isNotWorking())
+		if (token == null || isNotWorking())
 			return;
 		controlButton.setText(activity.getString(R.string.play));
 		controlButton.setEnabled(true);
@@ -266,7 +275,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	public void Play() {
-		if (server == null || token == null || isNotWorking())
+		if (token == null || isNotWorking())
 			return;
 		if (selectedSong.equals(playingSong)) {
 			controlButton.setText(activity.getString(R.string.pause));
@@ -277,13 +286,13 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	public void Search(String artist, String title) {
-		if (server == null || isNotWorking())
+		if (isNotWorking())
 			return;
 		new SearchSongLoader().run(artist, title);
 	}
 
 	public void addSong(String artist, String title) {
-		if (server == null || isNotWorking())
+		if (isNotWorking())
 			return;
 		lastAction = "The song "+title+" by "+artist+" was added";
 		server.addSong(new Song(artist, title, artist + "." + title + ".mp3"));
@@ -296,8 +305,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private class SearchSongLoader extends Thread {
 		public void run(String artist, String title) {
 			songs = server.searchSong(artist, title);
-
-			ListView lv = (ListView) activity.findViewById(R.id.listView);
 
 			List<Map<String, String>> array = new ArrayList<>();
 			for (Song s : songs)

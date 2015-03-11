@@ -67,7 +67,10 @@ public class MainActivity extends ActionBarActivity {
 					.show();
 			return true;
 		} else if (id == R.id.action_reconnect) {
-			connect();
+			if(sp != null)
+				sp.connect();
+			else
+				connect();
 		}
 		return super.onOptionsItemSelected(item);
 	}
