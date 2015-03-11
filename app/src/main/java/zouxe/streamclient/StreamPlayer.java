@@ -8,10 +8,12 @@ import Player.Song;
 import Player._MonitorDisp;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 
@@ -177,6 +179,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				EditText titleSearch = (EditText) activity.findViewById(R.id.titleSearchText);
 				Button addButton = (Button) activity.findViewById(R.id.addButton);
 				Button searchButton = (Button) activity.findViewById(R.id.searchButton);
+				MenuItem reconnected = (MenuItem) activity.findViewById(R.id.action_reconnect);
+				reconnected.setEnabled(!b);
 				artistAdd.setEnabled(b);
 				titleAdd.setEnabled(b);
 				artistSearch.setEnabled(b);

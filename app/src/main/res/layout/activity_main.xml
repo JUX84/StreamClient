@@ -14,7 +14,7 @@
         android:id="@+id/addButton"
         android:layout_below="@+id/artistAddText"
         android:layout_centerHorizontal="true"
-        android:onClick="add"/>
+        android:onClick="add" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -60,7 +60,7 @@
         android:layout_alignBottom="@+id/artistSearchText"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:onClick="search"/>
+        android:onClick="search" />
 
     <Button
         android:layout_width="wrap_content"
@@ -71,7 +71,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/artistAddText"
         android:layout_alignEnd="@+id/artistAddText"
-        android:onClick="play"/>
+        android:onClick="play" />
 
     <ListView
         android:layout_width="wrap_content"
@@ -91,7 +91,7 @@
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/addButton"
         android:layout_toEndOf="@+id/addButton"
-        android:onClick="remove"/>
+        android:onClick="remove" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -103,7 +103,8 @@
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/titleAddText"
         android:layout_alignEnd="@+id/titleAddText"
-        android:singleLine="false" android:ellipsize="marquee"/>
+        android:singleLine="false"
+        android:ellipsize="marquee" />
 
     <EditText
         android:layout_width="wrap_content"
