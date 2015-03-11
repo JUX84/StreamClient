@@ -8,7 +8,6 @@ import Player.Song;
 import Player._MonitorDisp;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ClipData;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
