@@ -310,84 +310,84 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		mp.prepareAsync();
 	}
 
-			public void Pause() {
-				if (token == null || isNotWorking())
-					return;
-				activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						controlButton.setText(activity.getString(R.string.play));
-						controlButton.setEnabled(true);
-					}
-				});
-				mp.pause();
+	public void Pause() {
+		if (token == null || isNotWorking())
+			return;
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				controlButton.setText(activity.getString(R.string.play));
+				controlButton.setEnabled(true);
 			}
+		});
+		mp.pause();
+	}
 
-			public void Play() {
-				if (token == null || isNotWorking())
-					return;
-				if (selectedSong.equals(playingSong)) {
-					activity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							controlButton.setText(activity.getString(R.string.pause));
-							controlButton.setEnabled(true);
-						}
-					});
+	public void Play() {
+		if (token == null || isNotWorking())
+			return;
+		if (selectedSong.equals(playingSong)) {
+			activity.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					controlButton.setText(activity.getString(R.string.pause));
+					controlButton.setEnabled(true);
 				}
-				isLoading = false;
-				mp.start();
-			}
-
-			public void Search(String artist, String title) {
-				if (isNotWorking())
-					return;
-				new SearchSongLoader().run(artist, title);
-			}
-
-			public void addSong(String artist, String title) {
-				if (isNotWorking())
-					return;
-				lastAction = "The song " + title + " by " + artist + " was added";
-				server.addSong(new Song(artist, title, artist + "." + title + ".mp3"));
-			}
-
-			public void onPrepared(MediaPlayer mp) {
-				Play();
-			}
-
-			private class SearchSongLoader extends Thread {
-				public void run(String artist, String title) {
-					songs = server.searchSong(artist, title);
-
-					List<Map<String, String>> array = new ArrayList<>();
-					for (Song s : songs)
-						array.add(putData(s.artist, s.title));
-
-					String[] from = {"title", "artist"};
-					int[] to = {android.R.id.text1, android.R.id.text2};
-
-					SimpleAdapter adapter = new SimpleAdapter(activity, array, android.R.layout.simple_list_item_2, from, to);
-					lv.setAdapter(adapter);
-
-					lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-						@Override
-						public void onItemClick(AdapterView<?> parent, final View view,
-						                        int position, long id) {
-							if (v != null)
-								v.setBackgroundColor(Color.TRANSPARENT);
-							view.setBackgroundColor(Color.LTGRAY);
-							v = view;
-							selectSong(songs[position]);
-						}
-					});
-				}
-
-				private HashMap<String, String> putData(String artist, String title) {
-					HashMap<String, String> item = new HashMap<>();
-					item.put("artist", artist);
-					item.put("title", title);
-					return item;
-				}
-			}
+			});
 		}
+		isLoading = false;
+		mp.start();
+	}
+
+	public void Search(String artist, String title) {
+		if (isNotWorking())
+			return;
+		new SearchSongLoader().run(artist, title);
+	}
+
+	public void addSong(String artist, String title) {
+		if (isNotWorking())
+			return;
+		lastAction = "The song " + title + " by " + artist + " was added";
+		server.addSong(new Song(artist, title, artist + "." + title + ".mp3"));
+	}
+
+	public void onPrepared(MediaPlayer mp) {
+		Play();
+	}
+
+	private class SearchSongLoader extends Thread {
+		public void run(String artist, String title) {
+			songs = server.searchSong(artist, title);
+
+			List<Map<String, String>> array = new ArrayList<>();
+			for (Song s : songs)
+				array.add(putData(s.artist, s.title));
+
+			String[] from = {"title", "artist"};
+			int[] to = {android.R.id.text1, android.R.id.text2};
+
+			SimpleAdapter adapter = new SimpleAdapter(activity, array, android.R.layout.simple_list_item_2, from, to);
+			lv.setAdapter(adapter);
+
+			lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, final View view,
+				                        int position, long id) {
+					if (v != null)
+						v.setBackgroundColor(Color.TRANSPARENT);
+					view.setBackgroundColor(Color.LTGRAY);
+					v = view;
+					selectSong(songs[position]);
+				}
+			});
+		}
+
+		private HashMap<String, String> putData(String artist, String title) {
+			HashMap<String, String> item = new HashMap<>();
+			item.put("artist", artist);
+			item.put("title", title);
+			return item;
+		}
+	}
+}
