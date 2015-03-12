@@ -18,6 +18,7 @@ import android.widget.TextView;
 public class MainActivity extends ActionBarActivity {
 	private StreamPlayer sp = null;
 	private AudioRecorder recorder = null;
+	private MenuItem reconnectButton = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +30,22 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if(null != sp)
+			sp.destroy();
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu_main, menu);
+		if(null == reconnectButton) {
+			reconnectButton = menu.findItem(R.id.action_reconnect);
+			if (null != sp)
+				sp.setReconnectButton(reconnectButton);
+		}
+		if(null != sp && sp.isNotWorking())
+			reconnectButton.setEnabled(true);
 		return true;
 	}
 

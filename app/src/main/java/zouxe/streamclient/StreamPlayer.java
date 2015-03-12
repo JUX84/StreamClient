@@ -55,6 +55,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private ListView lv = null;
 	private int pingRetrys = 5;
 	private MenuItem reconnect = null;
+	IceStorm.TopicPrx topic = null;
+	Ice.ObjectPrx monitorProxy = null;
 
 	public StreamPlayer(Activity activity) {
 		this.activity = activity;
@@ -108,6 +110,13 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		}
 	}
 
+	public void destroy() {
+		if(communicator == null || !connected)
+			return;
+		unsubscribe();
+		communicator.destroy();
+	}
+
 	private void initIce() {
 		try {
 			InitializationData initData = new InitializationData();
@@ -159,13 +168,12 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			IceStorm.TopicManagerPrx topicManager = IceStorm.TopicManagerPrxHelper.checkedCast(obj);
 			Ice.ObjectAdapter adapter = communicator.createObjectAdapterWithRouter("MonitorAdapter", router);
 			Monitor monitor = new MonitorI();
-			Ice.ObjectPrx proxy = adapter.add(monitor, new Identity("default", router.getCategoryForClient())).ice_twoway();
+			monitorProxy = adapter.add(monitor, new Identity("default", router.getCategoryForClient())).ice_twoway();
 			adapter.activate();
-			IceStorm.TopicPrx topic;
 			try {
 				topic = topicManager.retrieve("StreamPlayerNotifs");
 				try {
-					topic.subscribeAndGetPublisher(null, proxy);
+					topic.subscribeAndGetPublisher(null, monitorProxy);
 				} catch(Exception e) {
 					Log.e("IceStormSubscribe", e.toString());
 				}
@@ -175,6 +183,12 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		} catch (Exception e) {
 			Log.e("IceStorm", e.toString());
 		}
+	}
+
+	private void unsubscribe() {
+		if (null == topic || null == monitorProxy)
+			return;
+		topic.unsubscribe(monitorProxy);
 	}
 
 	private void setControlsEnabled(final boolean b) {
