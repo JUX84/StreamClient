@@ -21,9 +21,15 @@ import java.util.*;
 
 class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private class MonitorI extends _MonitorDisp {
-		public void report(String str, Current c) {
-			if (!str.equals(lastAction))
-				Log.v("Notification", str);
+		public void report(final String str, Current c) {
+			if (!str.equals(lastAction)) {
+				activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(activity.getApplicationContext(), str, Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
 			lastAction = "";
 		}
 	}
@@ -48,6 +54,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private String lastAction = "";
 	private ListView lv = null;
 	private int pingRetrys = 5;
+	private MenuItem reconnect = null;
 
 	public StreamPlayer(Activity activity) {
 		this.activity = activity;
@@ -93,9 +100,11 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 					}
 				}
 			};
-			pingTimer.schedule(pingTimerTask, 0, 5000);
+			pingTimer.schedule(pingTimerTask, 0, 1000);
 		} else {
 			setStatus(activity.getString(R.string.disconnected));
+			setControlsEnabled(false);
+			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 		}
 	}
 
@@ -178,8 +187,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				EditText titleSearch = (EditText) activity.findViewById(R.id.titleSearchText);
 				Button addButton = (Button) activity.findViewById(R.id.addButton);
 				Button searchButton = (Button) activity.findViewById(R.id.searchButton);
-				MenuItem reconnected = (MenuItem) activity.findViewById(R.id.action_reconnect);
-				reconnected.setEnabled(!b);
+				if(null != reconnect)
+					reconnect.setEnabled(!b);
 				artistAdd.setEnabled(b);
 				titleAdd.setEnabled(b);
 				artistSearch.setEnabled(b);
@@ -217,6 +226,10 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			}
 		}
 		return !isWorking;
+	}
+
+	public void setReconnectButton(MenuItem reconnect) {
+		this.reconnect = reconnect;
 	}
 
 	public String getAddress() {
