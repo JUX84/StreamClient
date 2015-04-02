@@ -55,8 +55,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private ListView lv = null;
 	private int pingRetrys = 5;
 	private MenuItem reconnect = null;
-	IceStorm.TopicPrx topic = null;
-	Ice.ObjectPrx monitorProxy = null;
+	private IceStorm.TopicPrx topic = null;
+	private Ice.ObjectPrx monitorProxy = null;
 
 	public StreamPlayer(Activity activity) {
 		this.activity = activity;
