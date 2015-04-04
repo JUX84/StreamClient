@@ -17,24 +17,28 @@ class AudioRecorder {
 	private speeral.ServerPrx server = null;
 	private short[][] audioData;
 	private int current;
+	private Thread recordingThread;
 
-	public void record() {
+	public AudioRecorder() {
 		if (communicator == null)
 			initIce();
 		initServer();
+	}
+
+	public void record() {
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				REC_SR, REC_CHAN,
 				REC_ENC, bufferSize);
 		recorder.startRecording();
 		isRecording = true;
-		Thread recordingThread = new Thread(new Runnable() {
+		recordingThread = new Thread(new Runnable() {
 			public void run() {
 				saveAudioData();
 			}
 		});
-		recordingThread.start();
 		audioData = new short[2048][];
 		current = 0;
+		recordingThread.start();
 	}
 
 	private void initIce() {
@@ -60,7 +64,7 @@ class AudioRecorder {
 		isRecording = false;
 		recorder.stop();
 		recorder.release();
-		recorder = null;
+		recordingThread.interrupt();
 		int i = 0;
 		for (int j = 0; j < current; ++j) {
 			i += audioData[j].length;
