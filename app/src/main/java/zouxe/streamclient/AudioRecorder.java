@@ -1,23 +1,21 @@
 package zouxe.streamclient;
 
+import PocketSphinxIce.*;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
-import speeral.SpeeralError;
 
 class AudioRecorder {
-	private static final int REC_SR = 8000;
+	private static final int REC_SR = 16000;
 	private static final int REC_CHAN = AudioFormat.CHANNEL_IN_MONO;
 	private static final int REC_ENC = AudioFormat.ENCODING_PCM_16BIT;
-	private static final int bufferSize = 1024;
+	private static int bufferSize;
 	private AudioRecord recorder = null;
-	private Boolean isRecording = false;
 	private Ice.Communicator communicator = null;
-	private speeral.ServerPrx server = null;
+	private IPocketSphinxServerPrx server = null;
 	private short[][] audioData;
 	private int current;
-	private Thread recordingThread;
 
 	public AudioRecorder() {
 		if (communicator == null)
@@ -26,19 +24,21 @@ class AudioRecorder {
 	}
 
 	public void record() {
+		bufferSize = AudioRecord.getMinBufferSize(REC_SR, REC_CHAN, REC_ENC);
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				REC_SR, REC_CHAN,
 				REC_ENC, bufferSize);
 		recorder.startRecording();
-		isRecording = true;
-		recordingThread = new Thread(new Runnable() {
-			public void run() {
-				saveAudioData();
-			}
-		});
-		audioData = new short[2048][];
+		audioData = new short[4096][];
 		current = 0;
-		recordingThread.start();
+		new Thread(new Runnable() {
+			public void run() {
+				while (current < 4096 && recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+					audioData[current] = new short[bufferSize];
+					recorder.read(audioData[current++], 0, bufferSize);
+				}
+			}
+		}).start();
 	}
 
 	private void initIce() {
@@ -53,40 +53,34 @@ class AudioRecorder {
 		if (communicator == null)
 			return;
 		try {
-			Ice.ObjectPrx base = communicator.stringToProxy("SpeeralServer:tcp -h 188.226.241.233 -p 10000");
-			server = speeral.ServerPrxHelper.checkedCast(base);
+			Ice.ObjectPrx base = communicator.stringToProxy("PocketSphinxServer:tcp -h 188.226.241.233 -p 20000");
+			server = PocketSphinxIce.IPocketSphinxServerPrxHelper.checkedCast(base);
 		} catch (Exception e) {
-			Log.e("Speeral", e.toString());
+			Log.e("PocketSphinxServer", e.toString());
 		}
 	}
 
 	public void stopRecord() {
-		isRecording = false;
 		recorder.stop();
-		recorder.release();
-		recordingThread.interrupt();
-		int i = 0;
-		for (int j = 0; j < current; ++j) {
-			i += audioData[j].length;
-		}
-		short[] data = new short[i];
-		i = 0;
-		for (int j = 0; j < current; ++j) {
-			for (short s : audioData[j]) {
-				data[i++] = s;
+		new Thread(new Runnable() {
+			public void run() {
+				int i = 0;
+				for (int j = 0; j < current; ++j) {
+					i += audioData[j].length;
+				}
+				short[] data = new short[i];
+				i = 0;
+				for (int j = 0; j < current; ++j) {
+					for (short s : audioData[j]) {
+						data[i++] = s;
+					}
+				}
+				try {
+					Log.v("Output", server.decode(data));
+				} catch (PocketSphinxIce.Error e) {
+					Log.e("PocketSphinx", e.toString());
+				}
 			}
-		}
-		try {
-			Log.v("Output", server.decode(data, true));
-		} catch (SpeeralError e) {
-			Log.e("Speeral", e.toString());
-		}
-	}
-
-	private void saveAudioData() {
-		while (isRecording) {
-			audioData[current] = new short[bufferSize];
-			recorder.read(audioData[current++], 0, bufferSize);
-		}
+		}).start();
 	}
 }
