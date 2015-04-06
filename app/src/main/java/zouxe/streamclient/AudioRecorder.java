@@ -6,6 +6,8 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 
+import java.util.Arrays;
+
 class AudioRecorder {
 	private static final int REC_SR = 16000;
 	private static final int REC_CHAN = AudioFormat.CHANNEL_IN_MONO;
@@ -14,7 +16,7 @@ class AudioRecorder {
 	private AudioRecord recorder = null;
 	private Ice.Communicator communicator = null;
 	private IPocketSphinxServerPrx server = null;
-	private short[][] audioData;
+	private short[] audioData;
 	private int current;
 
 	public AudioRecorder() {
@@ -29,14 +31,14 @@ class AudioRecorder {
 				REC_SR, REC_CHAN,
 				REC_ENC, bufferSize);
 		recorder.startRecording();
-		audioData = new short[4096][];
+		audioData = new short[bufferSize*100];
 		current = 0;
 		new Thread(new Runnable() {
 			public void run() {
-				while (current < 4096 && recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
-					audioData[current] = new short[bufferSize];
-					recorder.read(audioData[current++], 0, bufferSize);
-				}
+			while (current < bufferSize*100 && recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+				int tmp = recorder.read(audioData, current, bufferSize);
+				current += tmp;
+			}
 			}
 		}).start();
 	}
@@ -64,19 +66,8 @@ class AudioRecorder {
 		recorder.stop();
 		new Thread(new Runnable() {
 			public void run() {
-				int i = 0;
-				for (int j = 0; j < current; ++j) {
-					i += audioData[j].length;
-				}
-				short[] data = new short[i];
-				i = 0;
-				for (int j = 0; j < current; ++j) {
-					for (short s : audioData[j]) {
-						data[i++] = s;
-					}
-				}
 				try {
-					Log.v("Output", server.decode(data));
+					Log.v("Output", server.decode(Arrays.copyOf(audioData, current)));
 				} catch (PocketSphinxIce.Error e) {
 					Log.e("PocketSphinx", e.toString());
 				}
