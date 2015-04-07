@@ -20,8 +20,8 @@ class AudioRecorder {
 	private IPocketSphinxServerPrx server = null;
 	private short[] audioData;
 	private int current;
-	private Activity activity;
-	private Button recordButton;
+	private final Activity activity;
+	private final Button recordButton;
 
 	public AudioRecorder(Ice.Communicator communicator, Activity activity) {
 		this.communicator = communicator;

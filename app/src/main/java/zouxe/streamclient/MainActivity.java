@@ -22,16 +22,16 @@ public class MainActivity extends ActionBarActivity {
 	private AudioRecorder recorder = null;
 	private Ice.Communicator communicator = null;
 	private MenuItem reconnectButton = null;
-	private String address = "80.240.129.188";
 
 	private void initIce() {
 		try {
 			InitializationData initData = new InitializationData();
 			initData.properties = Ice.Util.createProperties();
-			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
+			String address = "80.240.129.188";
+			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h "+ address +" -p 4063");
 			initData.properties.setProperty("Ice.ACM.Client", "0");
 			initData.properties.setProperty("Ice.RetryIntervals" ,"-1");
-			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
+			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h "+ address +" -p 4063");
 			communicator = Ice.Util.initialize(initData);
 		} catch (Exception e) {
 			Log.e("Ice", e.toString());
@@ -99,11 +99,7 @@ public class MainActivity extends ActionBarActivity {
 					.show();
 			return true;
 		} else if (id == R.id.action_reconnect) {
-			new Thread(new Runnable() {
-				public void run() {
-					connect();
-				}
-			}).start();
+			connect();
 		}
 		return super.onOptionsItemSelected(item);
 	}

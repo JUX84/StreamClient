@@ -2,7 +2,6 @@ package zouxe.streamclient;
 
 import Ice.Current;
 import Ice.Identity;
-import Ice.InitializationData;
 import Player.Monitor;
 import Player.Song;
 import Player._MonitorDisp;
@@ -57,8 +56,9 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private MenuItem reconnect = null;
 	private IceStorm.TopicPrx topic = null;
 	private Ice.ObjectPrx monitorProxy = null;
+	private List<Map<String, String>> array;
 
-	public StreamPlayer(Ice.Communicator communicator, Activity activity) {
+	public StreamPlayer(Ice.Communicator communicator, final Activity activity) {
 		this.communicator = communicator;
 		this.activity = activity;
 
@@ -68,10 +68,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 
 		mp = new MediaPlayer();
 
-		connect();
-	}
-
-	public void connect() {
 		if(isWorking)
 			return;
 		setStatus(activity.getString(R.string.connecting));
@@ -285,6 +281,11 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			Pause();
 		lastAction = "The song "+selectedSong.title+" by "+selectedSong.artist+" was removed";
 		server.removeSong(selectedSong);
+		HashMap<String, String> item = new HashMap<>();
+		item.put("artist", selectedSong.artist);
+		item.put("title", selectedSong.title);
+		array.remove(item);
+		((SimpleAdapter) lv.getAdapter()).notifyDataSetChanged();
 		selectedSong = null;
 		controlButton.setEnabled(false);
 		removeButton.setEnabled(false);
@@ -373,7 +374,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		public void run(String artist, String title) {
 			songs = server.searchSong(artist, title);
 
-			List<Map<String, String>> array = new ArrayList<>();
+			array = new ArrayList<>();
 			for (Song s : songs)
 				array.add(putData(s.artist, s.title));
 
