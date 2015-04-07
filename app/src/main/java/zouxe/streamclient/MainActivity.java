@@ -1,11 +1,13 @@
 package zouxe.streamclient;
 
+import Ice.InitializationData;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,15 +20,30 @@ import android.widget.TextView;
 public class MainActivity extends ActionBarActivity {
 	private StreamPlayer sp = null;
 	private AudioRecorder recorder = null;
+	private Ice.Communicator communicator = null;
 	private MenuItem reconnectButton = null;
+	private String address = "80.240.129.188";
+
+	private void initIce() {
+		try {
+			InitializationData initData = new InitializationData();
+			initData.properties = Ice.Util.createProperties();
+			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
+			initData.properties.setProperty("Ice.ACM.Client", "0");
+			initData.properties.setProperty("Ice.RetryIntervals" ,"-1");
+			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
+			communicator = Ice.Util.initialize(initData);
+		} catch (Exception e) {
+			Log.e("Ice", e.toString());
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		initIce();
 		connect();
-		if (recorder == null)
-			recorder = new AudioRecorder();
 	}
 
 	@Override
@@ -82,17 +99,19 @@ public class MainActivity extends ActionBarActivity {
 					.show();
 			return true;
 		} else if (id == R.id.action_reconnect) {
-			if(sp != null)
-				sp.connect();
-			else
-				connect();
+			new Thread(new Runnable() {
+				public void run() {
+					connect();
+				}
+			}).start();
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
 	private void connect() {
 		if (sp == null || sp.isNotWorking())
-			new StreamPlayerLoader().run(this);
+			new StreamPlayerLoader().run(communicator, this);
+		recorder = new AudioRecorder(communicator, this);
 	}
 
 	public void search(View searchView) {
@@ -145,12 +164,10 @@ public class MainActivity extends ActionBarActivity {
 		if (recordButton.getText().equals(getString(R.string.record))) {
 			if (null != recorder) {
 				recorder.record();
-				recordButton.setText(R.string.stop);
 			}
 		} else if (recordButton.getText().equals(getString(R.string.stop))) {
 			if (null != recorder) {
 				recorder.stopRecord();
-				recordButton.setText(getString(R.string.record));
 			}
 		}
 	}
@@ -161,8 +178,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private class StreamPlayerLoader extends Thread {
-		public void run(Activity act) {
-			sp = new StreamPlayer(act);
+		public void run(Ice.Communicator communicator, Activity act) {
+			sp = new StreamPlayer(communicator, act);
 			sp.Search("", "");
 		}
 	}

@@ -58,7 +58,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private IceStorm.TopicPrx topic = null;
 	private Ice.ObjectPrx monitorProxy = null;
 
-	public StreamPlayer(Activity activity) {
+	public StreamPlayer(Ice.Communicator communicator, Activity activity) {
+		this.communicator = communicator;
 		this.activity = activity;
 
 		controlButton = (Button) activity.findViewById(R.id.controlButton);
@@ -74,8 +75,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		if(isWorking)
 			return;
 		setStatus(activity.getString(R.string.connecting));
-		if (communicator == null)
-			initIce();
 		initRouter();
 		initServer();
 		initIceStorm();
@@ -111,29 +110,13 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	public void destroy() {
-		if(communicator == null || !connected)
+		if(!connected)
 			return;
 		unsubscribe();
 		communicator.destroy();
 	}
 
-	private void initIce() {
-		try {
-			InitializationData initData = new InitializationData();
-			initData.properties = Ice.Util.createProperties();
-			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
-			initData.properties.setProperty("Ice.ACM.Client", "0");
-			initData.properties.setProperty("Ice.RetryIntervals" ,"-1");
-			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h "+address+" -p 4063");
-			communicator = Ice.Util.initialize(initData);
-		} catch (Exception e) {
-			Log.e("Ice", e.toString());
-		}
-	}
-
 	private void initRouter() {
-		if (communicator == null)
-			return;
 		try {
 			Ice.RouterPrx defaultRouter = communicator.getDefaultRouter();
 			router = Glacier2.RouterPrxHelper.checkedCast(defaultRouter);
@@ -149,7 +132,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	private void initServer() {
-		if (communicator == null || !connected)
+		if (!connected)
 			return;
 		try {
 			Ice.ObjectPrx base = communicator.stringToProxy("StreamMetaServer:tcp -h " + address + " -p " + port);
@@ -161,7 +144,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	private void initIceStorm() {
-		if (communicator == null || !connected)
+		if (!connected)
 			return;
 		try {
 			Ice.ObjectPrx obj = communicator.stringToProxy("IceStorm/TopicManager:tcp -h " + address + " -p 9999");
