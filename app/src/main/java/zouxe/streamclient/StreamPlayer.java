@@ -97,7 +97,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 					}
 				}
 			};
-			pingTimer.schedule(pingTimerTask, 0, 1000);
+			pingTimer.schedule(pingTimerTask, 0, 3000);
 		} else {
 			setStatus(activity.getString(R.string.disconnected));
 			setControlsEnabled(false);

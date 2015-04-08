@@ -1,7 +1,6 @@
 package zouxe.streamclient;
 
 import Ice.InitializationData;
-import Player.Song;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
