@@ -7,7 +7,18 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
 class AudioRecorder {
@@ -73,9 +84,37 @@ class AudioRecorder {
 						}
 					});
 					try {
-						Log.v("Output", server.decode(Arrays.copyOf(audioData, current)));
+						String tmp = server.decode(Arrays.copyOf(audioData, current));
+						Log.v("Output", tmp);
+						RequestQueue queue = Volley.newRequestQueue(activity);
+						String url = "http://zouxe.ovh:8080/CommandParser/webresources/api?str=" + URLEncoder.encode(tmp, "UTF-8");
+						StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+							@Override
+							public void onResponse(String response) {
+								try {
+									JSONObject object = new JSONObject(response);
+									JSONObject song = new JSONObject(object.getString("song"));
+									String command = object.getString("command");
+									String artist = song.getString("artist");
+									String title = song.getString("title");
+									Toast.makeText(activity.getApplicationContext(), command+": "+artist+" - "+title, Toast.LENGTH_SHORT).show();
+									if(command.equals("play"))
+										((MainActivity) activity).audioSong(artist, title);
+								} catch (JSONException e) {
+									e.printStackTrace();
+								}
+							}
+						}, new Response.ErrorListener() {
+							@Override
+							public void onErrorResponse(VolleyError error) {
+								Toast.makeText(activity.getApplicationContext(), "Didn't work", Toast.LENGTH_SHORT).show();
+							}
+						});
+						queue.add(stringRequest);
 					} catch (PocketSphinxIce.Error e) {
 						Log.e("PocketSphinx", e.toString());
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
 					}
 					activity.runOnUiThread(new Runnable() {
 						@Override

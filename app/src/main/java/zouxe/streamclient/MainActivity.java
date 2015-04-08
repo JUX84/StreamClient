@@ -1,6 +1,7 @@
 package zouxe.streamclient;
 
 import Ice.InitializationData;
+import Player.Song;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -171,6 +172,11 @@ public class MainActivity extends ActionBarActivity {
 	public void remove(View removeView) {
 		sp.removeSong();
 		sp.Search("", "");
+	}
+
+	public void audioSong(String artist, String title) {
+		sp.getSong(artist, title);
+		sp.Start();
 	}
 
 	private class StreamPlayerLoader extends Thread {

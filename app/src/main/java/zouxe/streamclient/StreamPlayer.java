@@ -180,7 +180,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				EditText titleSearch = (EditText) activity.findViewById(R.id.titleSearchText);
 				Button addButton = (Button) activity.findViewById(R.id.addButton);
 				Button searchButton = (Button) activity.findViewById(R.id.searchButton);
-				if(null != reconnect)
+				if (null != reconnect)
 					reconnect.setEnabled(!b);
 				artistAdd.setEnabled(b);
 				titleAdd.setEnabled(b);
@@ -188,7 +188,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				titleSearch.setEnabled(b);
 				addButton.setEnabled(b);
 				searchButton.setEnabled(b);
-				if(!b) {
+				if (!b) {
 					controlButton.setEnabled(false);
 					removeButton.setEnabled(false);
 					lv.setAdapter(null);
@@ -200,7 +200,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private void ping() {
 		long t = System.currentTimeMillis();
 		server.ice_ping();
-		setStatus(activity.getString(R.string.connected)+" ("+(System.currentTimeMillis()-t)+"ms)");
+		setStatus(activity.getString(R.string.connected) + " (" + (System.currentTimeMillis() - t) + "ms)");
 	}
 
 	public boolean isNotWorking() {
@@ -368,6 +368,16 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 
 	public void onPrepared(MediaPlayer mp) {
 		Play();
+	}
+
+	public void getSong(String artist, String title) {
+		for (Song s : songs) {
+			if (s.artist.equals(artist) && s.title.equals(title)) {
+				selectSong(s);
+				Start();
+				break;
+			}
+		}
 	}
 
 	private class SearchSongLoader extends Thread {
