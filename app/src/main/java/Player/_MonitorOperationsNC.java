@@ -20,7 +20,7 @@
 
 package Player;
 
-interface _MonitorOperationsNC
+public interface _MonitorOperationsNC
 {
-    void report(String notif);
+    void report(String action, Song s);
 }

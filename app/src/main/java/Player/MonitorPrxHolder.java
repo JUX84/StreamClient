@@ -20,7 +20,7 @@
 
 package Player;
 
-final class MonitorPrxHolder
+public final class MonitorPrxHolder
 {
     public
     MonitorPrxHolder()
@@ -30,7 +30,8 @@ final class MonitorPrxHolder
     public
     MonitorPrxHolder(MonitorPrx value)
     {
-	    MonitorPrx value1 = value;
+        this.value = value;
     }
 
+    public MonitorPrx value;
 }

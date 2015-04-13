@@ -23,7 +23,7 @@ package Player;
 public final class _MonitorDelM extends Ice._ObjectDelM implements _MonitorDel
 {
     public void
-    report(String notif, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __observer)
+    report(String action, Song s, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __observer)
         throws IceInternal.LocalExceptionWrapper
     {
         IceInternal.Outgoing __og = __handler.getOutgoing("report", Ice.OperationMode.Normal, __ctx, __observer);
@@ -32,7 +32,8 @@ public final class _MonitorDelM extends Ice._ObjectDelM implements _MonitorDel
             try
             {
                 IceInternal.BasicStream __os = __og.startWriteParams(Ice.FormatType.DefaultFormat);
-                __os.writeString(notif);
+                __os.writeString(action);
+                s.__write(__os);
                 __og.endWriteParams();
             }
             catch(Ice.LocalException __ex)

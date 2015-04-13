@@ -23,13 +23,13 @@ package Player;
 public abstract class _MonitorDisp extends Ice.ObjectImpl implements Monitor
 {
     protected void
-    ice_copyStateFrom()
+    ice_copyStateFrom(Ice.Object __obj)
         throws java.lang.CloneNotSupportedException
     {
         throw new java.lang.CloneNotSupportedException();
     }
 
-    private static final String[] __ids =
+    public static final String[] __ids =
     {
         "::Ice::Object",
         "::Player::Monitor"
@@ -70,19 +70,22 @@ public abstract class _MonitorDisp extends Ice.ObjectImpl implements Monitor
         return __ids[1];
     }
 
-    public final void report(String notif)
+    public final void report(String action, Song s)
     {
-        report(notif, null);
+        report(action, s, null);
     }
 
-    private static Ice.DispatchStatus ___report(Monitor __obj, IceInternal.Incoming __inS, Ice.Current __current)
+    public static Ice.DispatchStatus ___report(Monitor __obj, IceInternal.Incoming __inS, Ice.Current __current)
     {
         __checkMode(Ice.OperationMode.Normal, __current.mode);
         IceInternal.BasicStream __is = __inS.startReadParams();
-        String notif;
-        notif = __is.readString();
+        String action;
+        Song s;
+        action = __is.readString();
+        s = new Song();
+        s.__read(__is);
         __inS.endReadParams();
-        __obj.report(notif, __current);
+        __obj.report(action, s, __current);
         __inS.__writeEmptyParams();
         return Ice.DispatchStatus.DispatchOK;
     }

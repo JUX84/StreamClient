@@ -24,17 +24,17 @@ public final class MonitorPrxHelper extends Ice.ObjectPrxHelperBase implements M
 {
     private static final String __report_name = "report";
 
-    public void report(String notif)
+    public void report(String action, Song s)
     {
-        report(notif, null, false);
+        report(action, s, null, false);
     }
 
-    public void report(String notif, java.util.Map<String, String> __ctx)
+    public void report(String action, Song s, java.util.Map<String, String> __ctx)
     {
-        report(notif, __ctx, true);
+        report(action, s, __ctx, true);
     }
 
-    private void report(String notif, java.util.Map<String, String> __ctx, boolean __explicitCtx)
+    private void report(String action, Song s, java.util.Map<String, String> __ctx, boolean __explicitCtx)
     {
         if(__explicitCtx && __ctx == null)
         {
@@ -51,7 +51,7 @@ public final class MonitorPrxHelper extends Ice.ObjectPrxHelperBase implements M
                 {
                     __delBase = __getDelegate(false);
                     _MonitorDel __del = (_MonitorDel)__delBase;
-                    __del.report(notif, __ctx, __observer);
+                    __del.report(action, s, __ctx, __observer);
                     return;
                 }
                 catch(IceInternal.LocalExceptionWrapper __ex)
@@ -73,44 +73,45 @@ public final class MonitorPrxHelper extends Ice.ObjectPrxHelperBase implements M
         }
     }
 
-    public Ice.AsyncResult begin_report(String notif)
+    public Ice.AsyncResult begin_report(String action, Song s)
     {
-        return begin_report(notif, null, false, null);
+        return begin_report(action, s, null, false, null);
     }
 
-    public Ice.AsyncResult begin_report(String notif, java.util.Map<String, String> __ctx)
+    public Ice.AsyncResult begin_report(String action, Song s, java.util.Map<String, String> __ctx)
     {
-        return begin_report(notif, __ctx, true, null);
+        return begin_report(action, s, __ctx, true, null);
     }
 
-    public Ice.AsyncResult begin_report(String notif, Ice.Callback __cb)
+    public Ice.AsyncResult begin_report(String action, Song s, Ice.Callback __cb)
     {
-        return begin_report(notif, null, false, __cb);
+        return begin_report(action, s, null, false, __cb);
     }
 
-    public Ice.AsyncResult begin_report(String notif, java.util.Map<String, String> __ctx, Ice.Callback __cb)
+    public Ice.AsyncResult begin_report(String action, Song s, java.util.Map<String, String> __ctx, Ice.Callback __cb)
     {
-        return begin_report(notif, __ctx, true, __cb);
+        return begin_report(action, s, __ctx, true, __cb);
     }
 
-    public Ice.AsyncResult begin_report(String notif, Callback_Monitor_report __cb)
+    public Ice.AsyncResult begin_report(String action, Song s, Callback_Monitor_report __cb)
     {
-        return begin_report(notif, null, false, __cb);
+        return begin_report(action, s, null, false, __cb);
     }
 
-    public Ice.AsyncResult begin_report(String notif, java.util.Map<String, String> __ctx, Callback_Monitor_report __cb)
+    public Ice.AsyncResult begin_report(String action, Song s, java.util.Map<String, String> __ctx, Callback_Monitor_report __cb)
     {
-        return begin_report(notif, __ctx, true, __cb);
+        return begin_report(action, s, __ctx, true, __cb);
     }
 
-    private Ice.AsyncResult begin_report(String notif, java.util.Map<String, String> __ctx, boolean __explicitCtx, IceInternal.CallbackBase __cb)
+    private Ice.AsyncResult begin_report(String action, Song s, java.util.Map<String, String> __ctx, boolean __explicitCtx, IceInternal.CallbackBase __cb)
     {
         IceInternal.OutgoingAsync __result = new IceInternal.OutgoingAsync(this, __report_name, __cb);
         try
         {
             __result.__prepare(__report_name, Ice.OperationMode.Normal, __ctx, __explicitCtx);
             IceInternal.BasicStream __os = __result.__startWriteParams(Ice.FormatType.DefaultFormat);
-            __os.writeString(notif);
+            __os.writeString(action);
+            s.__write(__os);
             __result.__endWriteParams();
             __result.__send(true);
         }
@@ -185,7 +186,7 @@ public final class MonitorPrxHelper extends Ice.ObjectPrxHelperBase implements M
                     __d = __h;
                 }
             }
-            catch(Ice.FacetNotExistException ignored)
+            catch(Ice.FacetNotExistException ex)
             {
             }
         }
@@ -207,7 +208,7 @@ public final class MonitorPrxHelper extends Ice.ObjectPrxHelperBase implements M
                     __d = __h;
                 }
             }
-            catch(Ice.FacetNotExistException ignored)
+            catch(Ice.FacetNotExistException ex)
             {
             }
         }
@@ -246,13 +247,13 @@ public final class MonitorPrxHelper extends Ice.ObjectPrxHelperBase implements M
         return __d;
     }
 
-    private static final String[] __ids =
+    public static final String[] __ids =
     {
         "::Ice::Object",
         "::Player::Monitor"
     };
 
-    private static String ice_staticId()
+    public static String ice_staticId()
     {
         return __ids[1];
     }

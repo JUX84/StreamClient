@@ -33,4 +33,6 @@ public interface _ServerOperationsNC
     void removeSong(Song s);
 
     Song[] searchSong(String artist, String title);
+
+    void uploadFile(String path, byte[] data);
 }

@@ -33,4 +33,6 @@ public interface _ServerOperations
     void removeSong(Song s, Ice.Current __current);
 
     Song[] searchSong(String artist, String title, Ice.Current __current);
+
+    void uploadFile(String path, byte[] data, Ice.Current __current);
 }

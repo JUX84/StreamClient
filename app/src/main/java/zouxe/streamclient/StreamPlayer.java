@@ -20,18 +20,20 @@ import java.util.*;
 
 class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private class MonitorI extends _MonitorDisp {
-		public void report(final String str, Current c) {
-			if (!str.equals(lastAction)) {
-				activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						Toast.makeText(activity.getApplicationContext(), str, Toast.LENGTH_SHORT).show();
-					}
-				});
-			}
-			lastAction = "";
-		}
-	}
+        @Override
+        public void report(String action, Song s, Current __current) {
+            if (!action.equals(lastAction) && s != selectedSong) {
+                final String str = "blabla";
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(activity.getApplicationContext(), str, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+            lastAction = "";
+        }
+    }
 
 	private MediaPlayer mp = null;
 	private Player.ServerPrx server = null;
@@ -286,7 +288,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		item.put("title", selectedSong.title);
 		array.remove(item);
 		((SimpleAdapter) lv.getAdapter()).notifyDataSetChanged();
-		selectedSong = null;
 		controlButton.setEnabled(false);
 		removeButton.setEnabled(false);
 	}

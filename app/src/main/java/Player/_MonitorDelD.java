@@ -22,7 +22,7 @@ package Player;
 
 public final class _MonitorDelD extends Ice._ObjectDelD implements _MonitorDel
 {
-    public void report(final String notif, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __observer)
+    public void report(final String action, final Song s, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __observer)
         throws IceInternal.LocalExceptionWrapper
     {
         final Ice.Current __current = new Ice.Current();
@@ -43,7 +43,7 @@ public final class _MonitorDelD extends Ice._ObjectDelD implements _MonitorDel
                     {
                         throw new Ice.OperationNotExistException(__current.id, __current.facet, __current.operation);
                     }
-                    __servant.report(notif, __current);
+                    __servant.report(action, s, __current);
                     return Ice.DispatchStatus.DispatchOK;
                 }
             };

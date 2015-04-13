@@ -39,4 +39,7 @@ public interface _ServerDel extends Ice._ObjectDel
 
     Song[] searchSong(String artist, String title, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __obsv)
         throws IceInternal.LocalExceptionWrapper;
+
+    void uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __obsv)
+        throws IceInternal.LocalExceptionWrapper;
 }

@@ -129,4 +129,22 @@ public interface ServerPrx extends Ice.ObjectPrx
     public Ice.AsyncResult begin_searchSong(String artist, String title, java.util.Map<String, String> __ctx, Callback_Server_searchSong __cb);
 
     public Song[] end_searchSong(Ice.AsyncResult __result);
+
+    public void uploadFile(String path, byte[] data);
+
+    public void uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx);
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data);
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx);
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, Ice.Callback __cb);
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx, Ice.Callback __cb);
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, Callback_Server_uploadFile __cb);
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx, Callback_Server_uploadFile __cb);
+
+    public void end_uploadFile(Ice.AsyncResult __result);
 }

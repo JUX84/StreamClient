@@ -20,6 +20,6 @@
 
 package Player;
 
-abstract class Callback_Monitor_report extends Ice.OnewayCallback
+public abstract class Callback_Monitor_report extends Ice.OnewayCallback
 {
 }

@@ -100,6 +100,11 @@ public abstract class _ServerDisp extends Ice.ObjectImpl implements Server
         stopSong(token, null);
     }
 
+    public final void uploadFile(String path, byte[] data)
+    {
+        uploadFile(path, data, null);
+    }
+
     public static Ice.DispatchStatus ___selectSong(Server __obj, IceInternal.Incoming __inS, Ice.Current __current)
     {
         __checkMode(Ice.OperationMode.Normal, __current.mode);
@@ -181,6 +186,20 @@ public abstract class _ServerDisp extends Ice.ObjectImpl implements Server
         return Ice.DispatchStatus.DispatchOK;
     }
 
+    public static Ice.DispatchStatus ___uploadFile(Server __obj, IceInternal.Incoming __inS, Ice.Current __current)
+    {
+        __checkMode(Ice.OperationMode.Normal, __current.mode);
+        IceInternal.BasicStream __is = __inS.startReadParams();
+        String path;
+        byte[] data;
+        path = __is.readString();
+        data = ByteSeqHelper.read(__is);
+        __inS.endReadParams();
+        __obj.uploadFile(path, data, __current);
+        __inS.__writeEmptyParams();
+        return Ice.DispatchStatus.DispatchOK;
+    }
+
     private final static String[] __all =
     {
         "addSong",
@@ -192,7 +211,8 @@ public abstract class _ServerDisp extends Ice.ObjectImpl implements Server
         "removeSong",
         "searchSong",
         "selectSong",
-        "stopSong"
+        "stopSong",
+        "uploadFile"
     };
 
     public Ice.DispatchStatus __dispatch(IceInternal.Incoming in, Ice.Current __current)
@@ -244,6 +264,10 @@ public abstract class _ServerDisp extends Ice.ObjectImpl implements Server
             case 9:
             {
                 return ___stopSong(this, in, __current);
+            }
+            case 10:
+            {
+                return ___uploadFile(this, in, __current);
             }
         }
 

@@ -20,7 +20,7 @@
 
 package Player;
 
-interface _MonitorOperations
+public interface _MonitorOperations
 {
-    void report(String notif, Ice.Current __current);
+    void report(String action, Song s, Ice.Current __current);
 }

@@ -20,7 +20,7 @@
 
 package Player;
 
-final class MonitorHolder extends Ice.ObjectHolderBase<Monitor>
+public final class MonitorHolder extends Ice.ObjectHolderBase<Monitor>
 {
     public
     MonitorHolder()

@@ -4,8 +4,10 @@ import Ice.InitializationData;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,12 +18,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.net.URLEncoder;
+import java.util.Arrays;
+
 
 public class MainActivity extends ActionBarActivity {
 	private StreamPlayer sp = null;
 	private AudioRecorder recorder = null;
 	private Ice.Communicator communicator = null;
 	private MenuItem reconnectButton = null;
+    private String songPath = null;
 
 	private void initIce() {
 		try {
@@ -124,6 +132,19 @@ public class MainActivity extends ActionBarActivity {
 		artistText.setText("");
 	}
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK)
+        {
+            if(requestCode == 0)
+            {
+                songPath = data.getData().getPath();
+            }
+        }
+    }
+
 	public void add(View addView) {
 		EditText titleText = (EditText) findViewById(R.id.titleAddText);
 		EditText artistText = (EditText) findViewById(R.id.artistAddText);
@@ -139,7 +160,27 @@ public class MainActivity extends ActionBarActivity {
 			artistText.setHintTextColor(Color.LTGRAY);
 		if (title.isEmpty() || artist.isEmpty())
 			return;
-		sp.addSong(artist, title);
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, 0);
+        int offset = 0;
+        File file = new File(songPath);
+        int max = sp.getMaxStream();
+        int size = file.length();
+        while(offset < size)
+        {
+            int end = offset + max;
+            if(end > size)
+                end = size;
+            byte[] temp = Arrays.copyOfRange(file., offset, end);
+            System.out.println("TEMP SIZE : " + temp.length);
+            try {
+                sp.uploadFile(URLEncoder.encode(artist+"."+title, "UTF-8"), offset, temp);
+            } catch (Exception e) {
+                Log.e("upload", e.toString());
+            }
+            offset = end;
+        }
+        sp.addSong(artist, title);
 		titleText.setText("");
 		artistText.setText("");
 		sp.Search("", "");

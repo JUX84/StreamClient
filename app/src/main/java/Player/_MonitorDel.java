@@ -20,8 +20,8 @@
 
 package Player;
 
-interface _MonitorDel extends Ice._ObjectDel
+public interface _MonitorDel extends Ice._ObjectDel
 {
-    void report(String notif, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __obsv)
+    void report(String action, Song s, java.util.Map<String, String> __ctx, Ice.Instrumentation.InvocationObserver __obsv)
         throws IceInternal.LocalExceptionWrapper;
 }

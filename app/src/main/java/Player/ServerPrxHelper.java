@@ -707,6 +707,111 @@ public final class ServerPrxHelper extends Ice.ObjectPrxHelperBase implements Se
         __end(__result, __stopSong_name);
     }
 
+    private static final String __uploadFile_name = "uploadFile";
+
+    public void uploadFile(String path, byte[] data)
+    {
+        uploadFile(path, data, null, false);
+    }
+
+    public void uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx)
+    {
+        uploadFile(path, data, __ctx, true);
+    }
+
+    private void uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx, boolean __explicitCtx)
+    {
+        if(__explicitCtx && __ctx == null)
+        {
+            __ctx = _emptyContext;
+        }
+        final Ice.Instrumentation.InvocationObserver __observer = IceInternal.ObserverHelper.get(this, "uploadFile", __ctx);
+        int __cnt = 0;
+        try
+        {
+            while(true)
+            {
+                Ice._ObjectDel __delBase = null;
+                try
+                {
+                    __delBase = __getDelegate(false);
+                    _ServerDel __del = (_ServerDel)__delBase;
+                    __del.uploadFile(path, data, __ctx, __observer);
+                    return;
+                }
+                catch(IceInternal.LocalExceptionWrapper __ex)
+                {
+                    __handleExceptionWrapper(__delBase, __ex, __observer);
+                }
+                catch(Ice.LocalException __ex)
+                {
+                    __cnt = __handleException(__delBase, __ex, null, __cnt, __observer);
+                }
+            }
+        }
+        finally
+        {
+            if(__observer != null)
+            {
+                __observer.detach();
+            }
+        }
+    }
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data)
+    {
+        return begin_uploadFile(path, data, null, false, null);
+    }
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx)
+    {
+        return begin_uploadFile(path, data, __ctx, true, null);
+    }
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, Ice.Callback __cb)
+    {
+        return begin_uploadFile(path, data, null, false, __cb);
+    }
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx, Ice.Callback __cb)
+    {
+        return begin_uploadFile(path, data, __ctx, true, __cb);
+    }
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, Callback_Server_uploadFile __cb)
+    {
+        return begin_uploadFile(path, data, null, false, __cb);
+    }
+
+    public Ice.AsyncResult begin_uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx, Callback_Server_uploadFile __cb)
+    {
+        return begin_uploadFile(path, data, __ctx, true, __cb);
+    }
+
+    private Ice.AsyncResult begin_uploadFile(String path, byte[] data, java.util.Map<String, String> __ctx, boolean __explicitCtx, IceInternal.CallbackBase __cb)
+    {
+        IceInternal.OutgoingAsync __result = new IceInternal.OutgoingAsync(this, __uploadFile_name, __cb);
+        try
+        {
+            __result.__prepare(__uploadFile_name, Ice.OperationMode.Normal, __ctx, __explicitCtx);
+            IceInternal.BasicStream __os = __result.__startWriteParams(Ice.FormatType.DefaultFormat);
+            __os.writeString(path);
+            ByteSeqHelper.write(__os, data);
+            __result.__endWriteParams();
+            __result.__send(true);
+        }
+        catch(Ice.LocalException __ex)
+        {
+            __result.__exceptionAsync(__ex);
+        }
+        return __result;
+    }
+
+    public void end_uploadFile(Ice.AsyncResult __result)
+    {
+        __end(__result, __uploadFile_name);
+    }
+
     public static ServerPrx checkedCast(Ice.ObjectPrx __obj)
     {
         ServerPrx __d = null;

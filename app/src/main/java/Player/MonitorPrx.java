@@ -22,21 +22,21 @@ package Player;
 
 public interface MonitorPrx extends Ice.ObjectPrx
 {
-    public void report(String notif);
+    public void report(String action, Song s);
 
-    public void report(String notif, java.util.Map<String, String> __ctx);
+    public void report(String action, Song s, java.util.Map<String, String> __ctx);
 
-    public Ice.AsyncResult begin_report(String notif);
+    public Ice.AsyncResult begin_report(String action, Song s);
 
-    public Ice.AsyncResult begin_report(String notif, java.util.Map<String, String> __ctx);
+    public Ice.AsyncResult begin_report(String action, Song s, java.util.Map<String, String> __ctx);
 
-    public Ice.AsyncResult begin_report(String notif, Ice.Callback __cb);
+    public Ice.AsyncResult begin_report(String action, Song s, Ice.Callback __cb);
 
-    public Ice.AsyncResult begin_report(String notif, java.util.Map<String, String> __ctx, Ice.Callback __cb);
+    public Ice.AsyncResult begin_report(String action, Song s, java.util.Map<String, String> __ctx, Ice.Callback __cb);
 
-    public Ice.AsyncResult begin_report(String notif, Callback_Monitor_report __cb);
+    public Ice.AsyncResult begin_report(String action, Song s, Callback_Monitor_report __cb);
 
-    public Ice.AsyncResult begin_report(String notif, java.util.Map<String, String> __ctx, Callback_Monitor_report __cb);
+    public Ice.AsyncResult begin_report(String action, Song s, java.util.Map<String, String> __ctx, Callback_Monitor_report __cb);
 
     public void end_report(Ice.AsyncResult __result);
 }
