@@ -15,7 +15,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 
 class StreamPlayer implements MediaPlayer.OnPreparedListener {
@@ -111,6 +115,11 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		if(!connected)
 			return;
 		unsubscribe();
+		try {
+			router.destroySession();
+		} catch (Exception e) {
+			Log.d("Glacier2Logout", e.toString());
+		}
 		communicator.destroy();
 	}
 
@@ -154,7 +163,9 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			try {
 				topic = topicManager.retrieve("StreamPlayerNotifs");
 				try {
-					topic.subscribeAndGetPublisher(null, monitorProxy);
+					Map<String, String> qos = new HashMap<>();
+					qos.put("reliability", "ordered");
+					topic.subscribeAndGetPublisher(qos, monitorProxy);
 				} catch(Exception e) {
 					Log.e("IceStormSubscribe", e.toString());
 				}
@@ -315,12 +326,12 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			return;
 		}
 		activity.runOnUiThread(new Runnable() {
-			                       @Override
-			                       public void run() {
-				                       controlButton.setText(activity.getString(R.string.loading));
-				                       controlButton.setEnabled(false);
-			                       }
-		                       });
+			@Override
+			public void run() {
+				controlButton.setText(activity.getString(R.string.loading));
+				controlButton.setEnabled(false);
+			}
+		});
 		isLoading = true;
 		mp.prepareAsync();
 	}
@@ -378,6 +389,32 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				Start();
 				break;
 			}
+		}
+	}
+
+	public void uploadFile(String songPath, String artist, String title) {
+		try {
+			int offset = 0;
+			File file = new File(songPath);
+			BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+			int max = 512*1024;//Integer.parseInt(communicator.getProperties().getProperty("Ice.MessageSizeMax"));
+			int size = (int) file.length();
+			byte[] bytes = new byte[(int) size];
+			in.read(bytes);
+			while (offset < size) {
+				int end = offset + max;
+				if (end > size)
+					end = size;
+				byte[] temp = Arrays.copyOfRange(bytes, offset, end);
+				try {
+					server.uploadFile(URLEncoder.encode(artist + "." + title, "UTF-8"), temp);
+				} catch (Exception e) {
+					Log.e("upload", e.toString());
+				}
+				offset = end;
+			}
+		} catch (Exception e) {
+			Log.e("upload", e.toString());
 		}
 	}
 

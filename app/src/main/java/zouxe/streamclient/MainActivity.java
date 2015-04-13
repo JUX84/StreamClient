@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,11 +17,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.net.URLEncoder;
-import java.util.Arrays;
-
 
 public class MainActivity extends ActionBarActivity {
 	private StreamPlayer sp = null;
@@ -30,6 +24,8 @@ public class MainActivity extends ActionBarActivity {
 	private Ice.Communicator communicator = null;
 	private MenuItem reconnectButton = null;
     private String songPath = null;
+	private String artist = null;
+	private String title = null;
 
 	private void initIce() {
 		try {
@@ -140,7 +136,17 @@ public class MainActivity extends ActionBarActivity {
         {
             if(requestCode == 0)
             {
+	            EditText titleText = (EditText) findViewById(R.id.titleAddText);
+	            EditText artistText = (EditText) findViewById(R.id.artistAddText);
                 songPath = data.getData().getPath();
+	            sp.uploadFile(songPath, artist, title);
+	            sp.addSong(artist, title);
+	            songPath = null;
+	            title = null;
+	            artist = null;
+	            titleText.setText("");
+	            artistText.setText("");
+	            sp.Search("", "");
             }
         }
     }
@@ -148,8 +154,8 @@ public class MainActivity extends ActionBarActivity {
 	public void add(View addView) {
 		EditText titleText = (EditText) findViewById(R.id.titleAddText);
 		EditText artistText = (EditText) findViewById(R.id.artistAddText);
-		String title = titleText.getText().toString();
-		String artist = artistText.getText().toString();
+		title = titleText.getText().toString();
+		artist = artistText.getText().toString();
 		if (title.isEmpty())
 			titleText.setHintTextColor(Color.RED);
 		else
@@ -160,30 +166,9 @@ public class MainActivity extends ActionBarActivity {
 			artistText.setHintTextColor(Color.LTGRAY);
 		if (title.isEmpty() || artist.isEmpty())
 			return;
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+        Intent intent = new Intent(Intent.ACTION_PICK);
         startActivityForResult(intent, 0);
-        int offset = 0;
-        File file = new File(songPath);
-        int max = sp.getMaxStream();
-        int size = file.length();
-        while(offset < size)
-        {
-            int end = offset + max;
-            if(end > size)
-                end = size;
-            byte[] temp = Arrays.copyOfRange(file., offset, end);
-            System.out.println("TEMP SIZE : " + temp.length);
-            try {
-                sp.uploadFile(URLEncoder.encode(artist+"."+title, "UTF-8"), offset, temp);
-            } catch (Exception e) {
-                Log.e("upload", e.toString());
-            }
-            offset = end;
-        }
-        sp.addSong(artist, title);
-		titleText.setText("");
-		artistText.setText("");
-		sp.Search("", "");
+
 	}
 
 	public void play(View controlView) {
