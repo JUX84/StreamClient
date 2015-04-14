@@ -7,6 +7,7 @@ import Player.Song;
 import Player._MonitorDisp;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -109,6 +110,10 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			setControlsEnabled(false);
 			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 		}
+	}
+
+	public Player.ServerPrx getServer() {
+		return server;
 	}
 
 	public void destroy() {
@@ -371,7 +376,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		new SearchSongLoader().run(artist, title);
 	}
 
-	public void addSong(String artist, String title) {
+	private void addSong(String artist, String title) {
 		if (isNotWorking())
 			return;
 		lastAction = "The song " + title + " by " + artist + " was added";
@@ -389,32 +394,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				Start();
 				break;
 			}
-		}
-	}
-
-	public void uploadFile(String songPath, String artist, String title) {
-		try {
-			int offset = 0;
-			File file = new File(songPath);
-			BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-			int max = 512*1024;//Integer.parseInt(communicator.getProperties().getProperty("Ice.MessageSizeMax"));
-			int size = (int) file.length();
-			byte[] bytes = new byte[(int) size];
-			in.read(bytes);
-			while (offset < size) {
-				int end = offset + max;
-				if (end > size)
-					end = size;
-				byte[] temp = Arrays.copyOfRange(bytes, offset, end);
-				try {
-					server.uploadFile(URLEncoder.encode(artist + "." + title, "UTF-8"), temp);
-				} catch (Exception e) {
-					Log.e("upload", e.toString());
-				}
-				offset = end;
-			}
-		} catch (Exception e) {
-			Log.e("upload", e.toString());
 		}
 	}
 

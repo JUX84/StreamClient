@@ -134,19 +134,13 @@ public class MainActivity extends ActionBarActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK)
         {
-            if(requestCode == 0)
-            {
+            if(requestCode == 0) {
+                songPath = data.getData().getPath();
+	            new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp.getServer()).upload();
 	            EditText titleText = (EditText) findViewById(R.id.titleAddText);
 	            EditText artistText = (EditText) findViewById(R.id.artistAddText);
-                songPath = data.getData().getPath();
-	            sp.uploadFile(songPath, artist, title);
-	            sp.addSong(artist, title);
-	            songPath = null;
-	            title = null;
-	            artist = null;
 	            titleText.setText("");
 	            artistText.setText("");
-	            sp.Search("", "");
             }
         }
     }
@@ -168,7 +162,6 @@ public class MainActivity extends ActionBarActivity {
 			return;
         Intent intent = new Intent(Intent.ACTION_PICK);
         startActivityForResult(intent, 0);
-
 	}
 
 	public void play(View controlView) {
