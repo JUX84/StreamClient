@@ -7,7 +7,6 @@ import Player.Song;
 import Player._MonitorDisp;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -16,30 +15,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.*;
 
 class StreamPlayer implements MediaPlayer.OnPreparedListener {
-	private class MonitorI extends _MonitorDisp {
-        @Override
-        public void report(String action, Song s, Current __current) {
-            if (!action.equals(lastAction) && s != selectedSong) {
-                final String str = "blabla";
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(activity.getApplicationContext(), str, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-            lastAction = "";
-        }
-    }
-
 	private MediaPlayer mp = null;
 	private Player.ServerPrx server = null;
 	private String token = null;
@@ -64,7 +43,6 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private IceStorm.TopicPrx topic = null;
 	private Ice.ObjectPrx monitorProxy = null;
 	private List<Map<String, String>> array;
-
 	public StreamPlayer(Ice.Communicator communicator, final Activity activity) {
 		this.communicator = communicator;
 		this.activity = activity;
@@ -75,7 +53,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 
 		mp = new MediaPlayer();
 
-		if(isWorking)
+		if (isWorking)
 			return;
 		setStatus(activity.getString(R.string.connecting));
 		initRouter();
@@ -117,7 +95,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	}
 
 	public void destroy() {
-		if(!connected)
+		if (!connected)
 			return;
 		unsubscribe();
 		try {
@@ -135,7 +113,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			try {
 				router.createSession("zouxe", "zouxe");
 				connected = true;
-			} catch(Exception e) {
+			} catch (Exception e) {
 				Log.e("Glacier2Login", e.toString());
 			}
 		} catch (Exception e) {
@@ -171,7 +149,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 					Map<String, String> qos = new HashMap<>();
 					qos.put("reliability", "ordered");
 					topic.subscribeAndGetPublisher(qos, monitorProxy);
-				} catch(Exception e) {
+				} catch (Exception e) {
 					Log.e("IceStormSubscribe", e.toString());
 				}
 			} catch (Exception e) {
@@ -231,8 +209,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				server = null;
 				isWorking = false;
 				connected = false;
-	            setControlsEnabled(false);
-	            setStatus(activity.getString(R.string.disconnected));
+				setControlsEnabled(false);
+				setStatus(activity.getString(R.string.disconnected));
 				new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 			}
 		}
@@ -297,7 +275,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			return;
 		if (playingSong == selectedSong)
 			Pause();
-		lastAction = "The song "+selectedSong.title+" by "+selectedSong.artist+" was removed";
+		lastAction = "The song " + selectedSong.title + " by " + selectedSong.artist + " was removed";
 		server.removeSong(selectedSong);
 		HashMap<String, String> item = new HashMap<>();
 		item.put("artist", selectedSong.artist);
@@ -376,7 +354,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		new SearchSongLoader().run(artist, title);
 	}
 
-	private void addSong(String artist, String title) {
+	public void addSong(String artist, String title) {
 		if (isNotWorking())
 			return;
 		lastAction = "The song " + title + " by " + artist + " was added";
@@ -394,6 +372,22 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				Start();
 				break;
 			}
+		}
+	}
+
+	private class MonitorI extends _MonitorDisp {
+		@Override
+		public void report(String action, Song s, Current __current) {
+			if (!action.equals(lastAction) && s != selectedSong) {
+				final String str = "blabla";
+				activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(activity.getApplicationContext(), str, Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+			lastAction = "";
 		}
 	}
 

@@ -1,7 +1,6 @@
 package zouxe.streamclient;
 
 import Player.Song;
-import android.app.ProgressDialog;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -12,7 +11,7 @@ import java.util.Arrays;
 /**
  * Created by JUX on 14/04/2015.
  */
-public class FileUploader {
+class FileUploader {
 	private String songPath = null;
 	private String artist = null;
 	private String title = null;

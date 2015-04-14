@@ -14,13 +14,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URLEncoder;
-import java.util.Arrays;
 
 /**
  * Created by JUX on 14/04/2015.
  */
-public class AudioProcessor {
-	private short[] data;
+class AudioProcessor {
+	private final short[] data;
 	private boolean valid = false;
 	private String command = null;
 	private String artist = null;

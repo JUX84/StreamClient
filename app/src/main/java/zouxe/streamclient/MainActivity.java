@@ -23,7 +23,6 @@ public class MainActivity extends ActionBarActivity {
 	private AudioRecorder recorder = null;
 	private Ice.Communicator communicator = null;
 	private MenuItem reconnectButton = null;
-    private String songPath = null;
 	private String artist = null;
 	private String title = null;
 
@@ -32,10 +31,10 @@ public class MainActivity extends ActionBarActivity {
 			InitializationData initData = new InitializationData();
 			initData.properties = Ice.Util.createProperties();
 			String address = "80.240.129.188";
-			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h "+ address +" -p 4063");
+			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h " + address + " -p 4063");
 			initData.properties.setProperty("Ice.ACM.Client", "0");
-			initData.properties.setProperty("Ice.RetryIntervals" ,"-1");
-			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h "+ address +" -p 4063");
+			initData.properties.setProperty("Ice.RetryIntervals", "-1");
+			initData.properties.setProperty("CallbackAdapter.Router", "Glacier2/router:tcp -h " + address + " -p 4063");
 			communicator = Ice.Util.initialize(initData);
 		} catch (Exception e) {
 			Log.e("Ice", e.toString());
@@ -53,19 +52,19 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		if(null != sp)
+		if (null != sp)
 			sp.destroy();
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu_main, menu);
-		if(null == reconnectButton) {
+		if (null == reconnectButton) {
 			reconnectButton = menu.findItem(R.id.action_reconnect);
 			if (null != sp)
 				sp.setReconnectButton(reconnectButton);
 		}
-		if(null != sp && sp.isNotWorking())
+		if (null != sp && sp.isNotWorking())
 			reconnectButton.setEnabled(true);
 		return true;
 	}
@@ -128,22 +127,21 @@ public class MainActivity extends ActionBarActivity {
 		artistText.setText("");
 	}
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == RESULT_OK)
-        {
-            if(requestCode == 0) {
-                songPath = data.getData().getPath();
-	            new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp.getServer()).upload();
-	            EditText titleText = (EditText) findViewById(R.id.titleAddText);
-	            EditText artistText = (EditText) findViewById(R.id.artistAddText);
-	            titleText.setText("");
-	            artistText.setText("");
-            }
-        }
-    }
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == RESULT_OK) {
+			if (requestCode == 0) {
+				String songPath = data.getData().getPath();
+				new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp.getServer()).upload();
+				sp.addSong(artist, title);
+				EditText titleText = (EditText) findViewById(R.id.titleAddText);
+				EditText artistText = (EditText) findViewById(R.id.artistAddText);
+				titleText.setText("");
+				artistText.setText("");
+			}
+		}
+	}
 
 	public void add(View addView) {
 		EditText titleText = (EditText) findViewById(R.id.titleAddText);
@@ -160,8 +158,8 @@ public class MainActivity extends ActionBarActivity {
 			artistText.setHintTextColor(Color.LTGRAY);
 		if (title.isEmpty() || artist.isEmpty())
 			return;
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        startActivityForResult(intent, 0);
+		Intent intent = new Intent(Intent.ACTION_PICK);
+		startActivityForResult(intent, 0);
 	}
 
 	public void play(View controlView) {
