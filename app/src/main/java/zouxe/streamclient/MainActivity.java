@@ -133,7 +133,8 @@ public class MainActivity extends ActionBarActivity {
 		if (resultCode == RESULT_OK) {
 			if (requestCode == 0) {
 				String songPath = data.getData().getPath();
-				new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp.getServer()).upload();
+				FileUploader uploader = new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp.getServer());
+				uploader.execute();
 				sp.addSong(artist, title);
 				EditText titleText = (EditText) findViewById(R.id.titleAddText);
 				EditText artistText = (EditText) findViewById(R.id.artistAddText);

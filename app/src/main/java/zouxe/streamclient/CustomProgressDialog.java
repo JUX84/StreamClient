@@ -13,6 +13,6 @@ class CustomProgressDialog extends ProgressDialog {
 
 	public void set(int size, String artist, String title) {
 		setMessage("Uploading " + title + " by " + artist);
-		setMax(size);
+		setMax(size / 1024);
 	}
 }
