@@ -38,7 +38,7 @@ class FileUploader extends AsyncTask<Void, Integer, Void> {
 			int max = 512 * 1024;
 			size = (int) file.length();
 			byte[] bytes = new byte[size];
-			in.read(bytes);
+			int i = in.read(bytes);
 			dialog.set(size, artist, title);
 			dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			dialog.setProgressNumberFormat("%1d/%2dKB");

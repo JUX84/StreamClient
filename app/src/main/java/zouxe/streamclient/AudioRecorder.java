@@ -1,90 +1,148 @@
 package zouxe.streamclient;
 
-import PocketSphinxIce.IPocketSphinxServerPrx;
 import android.app.Activity;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
+import android.content.Intent;
+import android.os.Bundle;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.Arrays;
+import java.net.URLEncoder;
+import java.util.List;
 
 class AudioRecorder {
-	private static final int REC_SR = 16000;
-	private static final int REC_CHAN = AudioFormat.CHANNEL_IN_MONO;
-	private static final int REC_ENC = AudioFormat.ENCODING_PCM_16BIT;
-	private static int bufferSize;
 	private final Activity activity;
 	private final Button recordButton;
-	private AudioRecord recorder = null;
-	private Ice.Communicator communicator = null;
-	private IPocketSphinxServerPrx server = null;
-	private short[] audioData;
-	private int current;
+	private SpeechRecognizer asr = null;
+	private Intent intent = null;
 
-	public AudioRecorder(Ice.Communicator communicator, Activity activity) {
-		this.communicator = communicator;
+	public AudioRecorder(Activity activity) {
 		this.activity = activity;
 		recordButton = (Button) activity.findViewById(R.id.recordButton);
-		initServer();
+		asr = SpeechRecognizer.createSpeechRecognizer(activity);
+		asr.setRecognitionListener(new ResultProcessor());
+		intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 	}
 
 	public void record() {
 		recordButton.setText(R.string.stop);
-		bufferSize = AudioRecord.getMinBufferSize(REC_SR, REC_CHAN, REC_ENC);
-		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-				REC_SR, REC_CHAN,
-				REC_ENC, bufferSize);
-		recorder.startRecording();
-		audioData = new short[bufferSize * 100];
-		current = 0;
-		new Thread(new Runnable() {
-			public void run() {
-				int tmp;
-				while (current < bufferSize * 100 && recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
-					tmp = recorder.read(audioData, current, bufferSize);
-					current += tmp;
-				}
-				stopRecord();
-			}
-		}).start();
-	}
-
-	private void initServer() {
-		try {
-			Ice.ObjectPrx base = communicator.stringToProxy("PocketSphinxServer:tcp -h 188.226.241.233 -p 20000");
-			server = PocketSphinxIce.IPocketSphinxServerPrxHelper.checkedCast(base);
-		} catch (Exception e) {
-			Log.e("PocketSphinxServer", e.toString());
-		}
+		asr.startListening(intent);
 	}
 
 	public void stopRecord() {
-		if (recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
-			recorder.stop();
-			new Thread(new Runnable() {
-				public void run() {
-					activity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							recordButton.setText("...");
-							recordButton.setEnabled(false);
-						}
-					});
-					AudioProcessor processor = new AudioProcessor(Arrays.copyOf(audioData, current), server, activity);
-					processor.audio2text();
-					processor.text2command();
-					activity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							recordButton.setEnabled(true);
-							recordButton.setText(R.string.record);
-						}
-					});
-				}
-			}).start();
+		recordButton.setText(R.string.record);
+		asr.stopListening();
+	}
 
+	private class ResultProcessor implements RecognitionListener {
+
+		@Override
+		public void onReadyForSpeech(Bundle params) {
+		}
+
+		@Override
+		public void onBeginningOfSpeech() {
+		}
+
+		@Override
+		public void onRmsChanged(float rmsdB) {
+		}
+
+		@Override
+		public void onBufferReceived(byte[] buffer) {
+		}
+
+		@Override
+		public void onEndOfSpeech() {
+		}
+
+		@Override
+		public void onError(int error) {
+			String message;
+			switch (error) {
+				case SpeechRecognizer.ERROR_AUDIO:
+					message = "Audio recording error.";
+					break;
+				case SpeechRecognizer.ERROR_CLIENT:
+					message = "Other client side errors.";
+					break;
+				case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+					message = "Insufficient permissions";
+					break;
+				case SpeechRecognizer.ERROR_NETWORK:
+					message = "Other network related errors.";
+					break;
+				case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+					message = "Network operation timed out.";
+					break;
+				case SpeechRecognizer.ERROR_NO_MATCH:
+					message = "No recognition result matched.";
+					break;
+				case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+					message = "RecognitionService busy.";
+					break;
+				case SpeechRecognizer.ERROR_SERVER:
+					message = "Server sends error status.";
+					break;
+				case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+					message = "No speech input";
+					break;
+				default:
+					message = "Error";
+			}
+			Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		public void onResults(Bundle results) {
+			List<String> tmp = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+			try {
+				RequestQueue queue = Volley.newRequestQueue(activity);
+				String url = "http://zouxe.ovh:8080/CommandParser/webresources/api?str=" + URLEncoder.encode(tmp.get(0), "UTF-8");
+				StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+					@Override
+					public void onResponse(String response) {
+						try {
+							JSONObject object = new JSONObject(response);
+							JSONObject song = new JSONObject(object.getString("song"));
+							String command = object.getString("command");
+							String artist = song.getString("artist");
+							String title = song.getString("title");
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+					}
+				}, new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						Toast.makeText(activity, "Didn't work", Toast.LENGTH_SHORT).show();
+					}
+				});
+				queue.add(stringRequest);
+			} catch (Exception e) {
+				Log.e("text2command", e.toString());
+			}
+			asr.stopListening();
+			recordButton.setText(R.string.record);
+		}
+
+		@Override
+		public void onPartialResults(Bundle partialResults) {
+		}
+
+		@Override
+		public void onEvent(int eventType, Bundle params) {
 		}
 	}
 }

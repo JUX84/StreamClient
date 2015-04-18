@@ -110,7 +110,7 @@ public class MainActivity extends ActionBarActivity {
 	private void connect() {
 		if (sp == null || sp.isNotWorking())
 			new StreamPlayerLoader().run(communicator, this);
-		recorder = new AudioRecorder(communicator, this);
+		recorder = new AudioRecorder(this);
 	}
 
 	public void search(View searchView) {
@@ -186,14 +186,14 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	public void remove(View removeView) {
-		sp.removeSong();
-		sp.Search("", "");
-	}
-
 	public void audioSong(String artist, String title) {
 		sp.getSong(artist, title);
 		sp.Start();
+	}
+
+	public void remove(View removeView) {
+		sp.removeSong();
+		sp.Search("", "");
 	}
 
 	private class StreamPlayerLoader extends Thread {
