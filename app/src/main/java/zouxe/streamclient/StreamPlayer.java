@@ -253,19 +253,19 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		selectedSong = s;
 		if (playingSong != null && playingSong.equals(selectedSong)) {
 			if (isLoading) {
-				controlButton.setText(activity.getString(R.string.loading));
+				controlButton.setText(R.string.loading);
 				controlButton.setEnabled(false);
 			} else {
 				if (mp.isPlaying())
-					controlButton.setText(activity.getString(R.string.pause));
+					controlButton.setText(R.string.pause);
 				else
-					controlButton.setText(activity.getString(R.string.play));
+					controlButton.setText(R.string.play);
 				controlButton.setEnabled(true);
 			}
 		} else {
-			controlButton.setText(activity.getString(R.string.start));
+			controlButton.setText(R.string.start);
 			controlButton.setEnabled(true);
-			removeButton.setText(activity.getString(R.string.remove));
+			removeButton.setText(R.string.remove);
 		}
 		removeButton.setEnabled(true);
 	}
@@ -325,7 +325,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				controlButton.setText(activity.getString(R.string.play));
+				controlButton.setText(R.string.play);
 				controlButton.setEnabled(true);
 			}
 		});

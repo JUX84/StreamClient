@@ -101,7 +101,7 @@ class AudioRecorder {
 				default:
 					message = "Error";
 			}
-			Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
+			Log.e("SpeechRecognizer", message);
 		}
 
 		@Override
@@ -126,7 +126,7 @@ class AudioRecorder {
 				}, new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError error) {
-						Toast.makeText(activity, "Didn't work", Toast.LENGTH_SHORT).show();
+						Log.e("CommandParser", error.toString());
 					}
 				});
 				queue.add(stringRequest);
