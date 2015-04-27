@@ -107,6 +107,7 @@ class AudioRecorder {
 		@Override
 		public void onResults(Bundle results) {
 			List<String> tmp = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+			Log.v("CommandParserSentence", tmp.get(0));
 			try {
 				RequestQueue queue = Volley.newRequestQueue(activity);
 				String url = "http://zouxe.ovh:8080/CommandParser/webresources/api?str=" + URLEncoder.encode(tmp.get(0), "UTF-8");
@@ -119,8 +120,15 @@ class AudioRecorder {
 							String command = object.getString("command");
 							String artist = song.getString("artist");
 							String title = song.getString("title");
-						} catch (JSONException e) {
-							e.printStackTrace();
+							Log.v("CommandParserSuccess", command + " " + artist + " " + title);
+						} catch (Exception e) {
+							try {
+								JSONObject object = new JSONObject(response);
+								String error = object.getString("error");
+								Log.e("CommandParser", error);
+							} catch (JSONException e2) {
+								e2.printStackTrace();
+							}
 						}
 					}
 				}, new Response.ErrorListener() {

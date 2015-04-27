@@ -30,7 +30,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private Button removeButton = null;
 	private boolean isLoading = false;
 	private Activity activity = null;
-	private String address = "80.240.129.188";
+	private String address = "zouxe.ovh";
 	private String port = "10001";
 	private boolean isWorking = false;
 	private Ice.Communicator communicator = null;

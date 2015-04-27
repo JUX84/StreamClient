@@ -48,7 +48,7 @@ class FileUploader extends AsyncTask<Void, Integer, Void> {
 					end = size;
 				byte[] temp = Arrays.copyOfRange(bytes, offset, end);
 				try {
-					publishProgress(offset / 1024);
+					publishProgress(offset);
 					server.uploadFile(artist + "." + title, temp);
 				} catch (Exception e) {
 					Log.e("upload", e.toString());
@@ -56,7 +56,7 @@ class FileUploader extends AsyncTask<Void, Integer, Void> {
 				offset += end;
 			}
 			dialog.dismiss();
-			server.addSong(new Song(artist, title, artist + "." + title));
+			server.addSong(new Song(artist, title, artist + "." + title + ".mp3"));
 		} catch (Exception e) {
 			Log.e("upload", e.toString());
 		}

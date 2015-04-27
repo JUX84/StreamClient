@@ -30,7 +30,7 @@ public class MainActivity extends ActionBarActivity {
 		try {
 			InitializationData initData = new InitializationData();
 			initData.properties = Ice.Util.createProperties();
-			String address = "80.240.129.188";
+			String address = "zouxe.ovh";
 			initData.properties.setProperty("Ice.Default.Router", "Glacier2/router:tcp -h " + address + " -p 4063");
 			initData.properties.setProperty("Ice.ACM.Client", "0");
 			initData.properties.setProperty("Ice.RetryIntervals", "-1");
@@ -135,7 +135,6 @@ public class MainActivity extends ActionBarActivity {
 				String songPath = data.getData().getPath();
 				FileUploader uploader = new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp.getServer());
 				uploader.execute();
-				sp.addSong(artist, title);
 				EditText titleText = (EditText) findViewById(R.id.titleAddText);
 				EditText artistText = (EditText) findViewById(R.id.artistAddText);
 				titleText.setText("");
