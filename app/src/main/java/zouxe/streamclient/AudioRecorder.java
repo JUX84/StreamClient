@@ -1,6 +1,5 @@
 package zouxe.streamclient;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
@@ -8,7 +7,6 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -22,12 +20,12 @@ import java.net.URLEncoder;
 import java.util.List;
 
 class AudioRecorder {
-	private final Activity activity;
+	private final MainActivity activity;
 	private final Button recordButton;
 	private SpeechRecognizer asr = null;
 	private Intent intent = null;
 
-	public AudioRecorder(Activity activity) {
+	public AudioRecorder(MainActivity activity) {
 		this.activity = activity;
 		recordButton = (Button) activity.findViewById(R.id.recordButton);
 		asr = SpeechRecognizer.createSpeechRecognizer(activity);
@@ -121,6 +119,22 @@ class AudioRecorder {
 							String artist = song.getString("artist");
 							String title = song.getString("title");
 							Log.v("CommandParserSuccess", command + " " + artist + " " + title);
+							switch (command) {
+								case "listen":
+									activity.audioPlaySong(artist, title);
+									break;
+								case "add":
+									activity.audioAddSong(artist, title);
+									break;
+								case "remove":
+									activity.audioRemoveSong(artist, title);
+									break;
+								case "search":
+									activity.audioSearchSong(artist, title);
+									break;
+								default:
+									throw new Exception("error");
+							}
 						} catch (Exception e) {
 							try {
 								JSONObject object = new JSONObject(response);

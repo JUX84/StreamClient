@@ -1,6 +1,5 @@
 package zouxe.streamclient;
 
-import Player.Song;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -20,13 +19,16 @@ class FileUploader extends AsyncTask<Void, Integer, Void> {
 	private CustomProgressDialog dialog = null;
 	private Player.ServerPrx server = null;
 	private int size = 0;
+	private StreamPlayer sp = null;
 
-	public FileUploader(String songPath, String artist, String title, CustomProgressDialog dialog, Player.ServerPrx server) {
+	public FileUploader(String songPath, String artist, String title, CustomProgressDialog dialog, StreamPlayer sp) {
 		this.songPath = songPath;
 		this.artist = artist;
 		this.title = title;
 		this.dialog = dialog;
-		this.server = server;
+		this.sp = sp;
+		this.server = sp.getServer();
+
 	}
 
 	@Override
@@ -39,6 +41,8 @@ class FileUploader extends AsyncTask<Void, Integer, Void> {
 			size = (int) file.length();
 			byte[] bytes = new byte[size];
 			int i = in.read(bytes);
+			if (i == 0)
+				return null;
 			dialog.set(size, artist, title);
 			dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			dialog.setProgressNumberFormat("%1d/%2dKB");
@@ -56,7 +60,7 @@ class FileUploader extends AsyncTask<Void, Integer, Void> {
 				offset += end;
 			}
 			dialog.dismiss();
-			server.addSong(new Song(artist, title, artist + "." + title + ".mp3"));
+			sp.addSong(artist, title);
 		} catch (Exception e) {
 			Log.e("upload", e.toString());
 		}

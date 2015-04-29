@@ -133,7 +133,7 @@ public class MainActivity extends ActionBarActivity {
 		if (resultCode == RESULT_OK) {
 			if (requestCode == 0) {
 				String songPath = data.getData().getPath();
-				FileUploader uploader = new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp.getServer());
+				FileUploader uploader = new FileUploader(songPath, artist, title, new CustomProgressDialog(this), sp);
 				uploader.execute();
 				EditText titleText = (EditText) findViewById(R.id.titleAddText);
 				EditText artistText = (EditText) findViewById(R.id.artistAddText);
@@ -185,20 +185,34 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	public void audioSong(String artist, String title) {
+	public void audioPlaySong(String artist, String title) {
 		sp.getSong(artist, title);
 		sp.Start();
 	}
 
+	public void audioAddSong(String artist, String title) {
+		this.artist = artist;
+		this.title = title;
+		Intent intent = new Intent(Intent.ACTION_PICK);
+		startActivityForResult(intent, 0);
+	}
+
+	public void audioRemoveSong(String artist, String title) {
+		sp.getSong(artist, title);
+		sp.removeSong();
+	}
+
+	public void audioSearchSong(String artist, String title) {
+		sp.Search(artist, title);
+	}
+
 	public void remove(View removeView) {
 		sp.removeSong();
-		sp.Search("", "");
 	}
 
 	private class StreamPlayerLoader extends Thread {
 		public void run(Ice.Communicator communicator, Activity act) {
 			sp = new StreamPlayer(communicator, act);
-			sp.Search("", "");
 		}
 	}
 }

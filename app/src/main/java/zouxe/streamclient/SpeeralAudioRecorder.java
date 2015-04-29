@@ -1,13 +1,10 @@
 package zouxe.streamclient;
 
-import PocketSphinxIce.IPocketSphinxServerPrx;
-import android.app.Activity;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -23,12 +20,12 @@ import java.util.Arrays;
 /**
  * Created by JUX on 19/04/2015.
  */
-public class SpeeralAudioRecorder {
+class SpeeralAudioRecorder {
 	private static final int REC_SR = 16000;
 	private static final int REC_CHAN = AudioFormat.CHANNEL_IN_MONO;
 	private static final int REC_ENC = AudioFormat.ENCODING_PCM_16BIT;
 	private static int bufferSize;
-	private final Activity activity;
+	private final MainActivity activity;
 	private final Button recordButton;
 	private AudioRecord recorder = null;
 	private Ice.Communicator communicator = null;
@@ -36,7 +33,7 @@ public class SpeeralAudioRecorder {
 	private short[] audioData;
 	private int current;
 
-	public SpeeralAudioRecorder(Ice.Communicator communicator, Activity activity) {
+	public SpeeralAudioRecorder(Ice.Communicator communicator, MainActivity activity) {
 		this.communicator = communicator;
 		this.activity = activity;
 		recordButton = (Button) activity.findViewById(R.id.recordButton);
@@ -73,7 +70,7 @@ public class SpeeralAudioRecorder {
 		}
 	}
 
-	public void stopRecord() {
+	private void stopRecord() {
 		if (recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
 			recorder.stop();
 			new Thread(new Runnable() {
@@ -99,8 +96,30 @@ public class SpeeralAudioRecorder {
 										String command = object.getString("command");
 										String artist = song.getString("artist");
 										String title = song.getString("title");
-									} catch (JSONException e) {
-										e.printStackTrace();
+										switch (command) {
+											case "listen":
+												activity.audioPlaySong(artist, title);
+												break;
+											case "add":
+												activity.audioAddSong(artist, title);
+												break;
+											case "remove":
+												activity.audioRemoveSong(artist, title);
+												break;
+											case "search":
+												activity.audioSearchSong(artist, title);
+												break;
+											default:
+												throw new Exception("error");
+										}
+									} catch (Exception e) {
+										try {
+											JSONObject object = new JSONObject(response);
+											String error = object.getString("error");
+											Log.e("CommandParser", error);
+										} catch (JSONException e2) {
+											e2.printStackTrace();
+										}
 									}
 								}
 							}, new Response.ErrorListener() {

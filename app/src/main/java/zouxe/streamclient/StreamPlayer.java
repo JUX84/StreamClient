@@ -275,7 +275,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			return;
 		if (playingSong == selectedSong)
 			Pause();
-		lastAction = "The song " + selectedSong.title + " by " + selectedSong.artist + " was removed";
+		lastAction = "del";
 		server.removeSong(selectedSong);
 		HashMap<String, String> item = new HashMap<>();
 		item.put("artist", selectedSong.artist);
@@ -357,7 +357,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	public void addSong(String artist, String title) {
 		if (isNotWorking())
 			return;
-		lastAction = "The song " + title + " by " + artist + " was added";
+		lastAction = "add";
 		server.addSong(new Song(artist, title, artist + "." + title + ".mp3"));
 	}
 
@@ -369,8 +369,14 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		for (Song s : songs) {
 			if (s.artist.equals(artist) && s.title.equals(title)) {
 				selectSong(s);
-				Start();
-				break;
+				return;
+			}
+		}
+		// if we find nothing, try with soundex for something sounding similar
+		for (Song s : songs) {
+			if (Utility.Soundex(s.artist).equals(Utility.Soundex(artist)) && Utility.Soundex(s.title).equals(Utility.Soundex(title))) {
+				selectSong(s);
+				return;
 			}
 		}
 	}
@@ -378,8 +384,19 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private class MonitorI extends _MonitorDisp {
 		@Override
 		public void report(String action, Song s, Current __current) {
-			if (!action.equals(lastAction) && s != selectedSong) {
-				final String str = "blabla";
+			if (!action.equals(lastAction) || s != selectedSong) {
+				final String str;
+				switch (action) {
+					case "del":
+						str = "The song " + s.title + " by " + s.artist + " was removed";
+						break;
+					case "add":
+						str = "The song " + s.title + " by " + s.artist + " was added";
+						break;
+					default:
+						str = "error";
+						break;
+				}
 				activity.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
