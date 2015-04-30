@@ -21,4 +21,32 @@
         android:layout_marginRight="4dp"
         android:layout_marginBottom="16dp"
         android:fontFamily="sans-serif"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/audioRecordChoice"
+            android:id="@+id/audioRecordChoice"
+            android:singleLine="true" />
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+        <RadioButton android:id="@+id/radio_builtin"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:text="@string/builtin"
+                     android:checked="true"
+                     android:onClick="onRadioButtonClicked"/>
+        <RadioButton android:id="@+id/radio_pocket"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:text="@string/pocketsphinx"
+                     android:onClick="onRadioButtonClicked"/>
+        <RadioButton android:id="@+id/radio_speeral"
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:text="@string/speeral"
+                     android:onClick="onRadioButtonClicked"/>
+    </RadioGroup>
 </LinearLayout>

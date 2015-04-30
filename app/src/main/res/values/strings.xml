@@ -30,4 +30,8 @@
     <string name="port">Port</string>
     <string name="accept">Accept</string>
     <string name="cancel">Cancel</string>
+    <string name="builtin">Built-in</string>
+    <string name="pocketsphinx">PocketSphinx</string>
+    <string name="speeral">Speeral</string>
+    <string name="audioRecordChoice">AudioRecorder choice</string>
 </resources>

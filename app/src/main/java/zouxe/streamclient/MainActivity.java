@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 
@@ -107,10 +108,33 @@ public class MainActivity extends ActionBarActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	public void onRadioButtonClicked(View view) {
+		boolean checked = ((RadioButton) view).isChecked();
+
+		// Check which radio button was clicked
+		switch(view.getId()) {
+			case R.id.radio_builtin:
+				if (checked) {
+					recorder = new BuiltinAudioRecorder(this);
+					break;
+				}
+			case R.id.radio_pocket:
+				if (checked) {
+					recorder = new PocketSphinxAudioRecorder(communicator, this);
+					break;
+				}
+			case R.id.radio_speeral:
+				if (checked) {
+					recorder = new SpeeralAudioRecorder(communicator, this);
+					break;
+				}
+		}
+	}
+
 	private void connect() {
 		if (sp == null || sp.isNotWorking())
 			new StreamPlayerLoader().run(communicator, this);
-		recorder = new AudioRecorder(this);
+		recorder = new BuiltinAudioRecorder(this);
 	}
 
 	public void search(View searchView) {

@@ -4,6 +4,7 @@ import PocketSphinxIce.IPocketSphinxServerPrx;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import com.android.volley.Request;
@@ -21,7 +22,7 @@ import java.util.Arrays;
 /**
  * Created by JUX on 19/04/2015.
  */
-class PocketSphinxAudioRecorder {
+class PocketSphinxAudioRecorder implements AudioRecorder {
 	private static final int REC_SR = 16000;
 	private static final int REC_CHAN = AudioFormat.CHANNEL_IN_MONO;
 	private static final int REC_ENC = AudioFormat.ENCODING_PCM_16BIT;
@@ -71,7 +72,7 @@ class PocketSphinxAudioRecorder {
 		}
 	}
 
-	private void stopRecord() {
+	public void stopRecord() {
 		if (recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
 			recorder.stop();
 			new Thread(new Runnable() {
@@ -85,9 +86,10 @@ class PocketSphinxAudioRecorder {
 					});
 					try {
 						String text = server.decode(Arrays.copyOf(audioData, current));
+						Log.v("PocketSphinxText", text);
 						try {
 							RequestQueue queue = Volley.newRequestQueue(activity);
-							String url = "http://zouxe.ovh:8080/CommandParser/webresources/api?str=" + URLEncoder.encode(text, "UTF-8");
+							String url = "http://zouxe.ovh:8080/CommandParser/webresources/api?lang=fr&str=" + URLEncoder.encode(text, "UTF-8");
 							StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
 								@Override
 								public void onResponse(String response) {

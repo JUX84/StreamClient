@@ -20,7 +20,7 @@ import java.util.Arrays;
 /**
  * Created by JUX on 19/04/2015.
  */
-class SpeeralAudioRecorder {
+class SpeeralAudioRecorder implements AudioRecorder {
 	private static final int REC_SR = 16000;
 	private static final int REC_CHAN = AudioFormat.CHANNEL_IN_MONO;
 	private static final int REC_ENC = AudioFormat.ENCODING_PCM_16BIT;
@@ -70,7 +70,7 @@ class SpeeralAudioRecorder {
 		}
 	}
 
-	private void stopRecord() {
+	public void stopRecord() {
 		if (recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
 			recorder.stop();
 			new Thread(new Runnable() {
@@ -84,9 +84,10 @@ class SpeeralAudioRecorder {
 					});
 					try {
 						String text = server.decode(Arrays.copyOf(audioData, current), true);
+						Log.v("SpeeralText", text);
 						try {
 							RequestQueue queue = Volley.newRequestQueue(activity);
-							String url = "http://zouxe.ovh:8080/CommandParser/webresources/api?str=" + URLEncoder.encode(text, "UTF-8");
+							String url = "http://zouxe.ovh:8080/CommandParser/webresources/api?lang=fr&str=" + URLEncoder.encode(text, "UTF-8");
 							StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
 								@Override
 								public void onResponse(String response) {
