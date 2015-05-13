@@ -26,8 +26,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private Song playingSong = null;
 	private Song selectedSong = null;
 	private View v = null;
-	private Button controlButton = null;
-	private Button removeButton = null;
+	private ImageButton controlButton = null;
+	private ImageButton removeButton = null;
 	private boolean isLoading = false;
 	private Activity activity = null;
 	private String address = "zouxe.ovh";
@@ -36,6 +36,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	private Ice.Communicator communicator = null;
 	private Glacier2.RouterPrx router = null;
 	private boolean connected = false;
+	private boolean playing = false;
+	private boolean paused = false;
 	private String lastAction = "";
 	private ListView lv = null;
 	private int pingRetrys = 5;
@@ -47,8 +49,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		this.communicator = communicator;
 		this.activity = activity;
 
-		controlButton = (Button) activity.findViewById(R.id.controlButton);
-		removeButton = (Button) activity.findViewById(R.id.removeButton);
+		controlButton = (ImageButton) activity.findViewById(R.id.controlButton);
+		removeButton = (ImageButton) activity.findViewById(R.id.removeButton);
 		lv = (ListView) activity.findViewById(R.id.listView);
 
 		mp = new MediaPlayer();
@@ -88,6 +90,14 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 			setControlsEnabled(false);
 			new AlertDialog.Builder(activity).setMessage(activity.getText(R.string.connectionTo) + " " + address + " " + activity.getText(R.string.fail) + ".\n" + activity.getText(R.string.disconnectedReasonServer)).create().show();
 		}
+	}
+
+	public boolean isPlaying() {
+		return playing;
+	}
+
+	public boolean isPaused() {
+		return paused;
 	}
 
 	public Player.ServerPrx getServer() {
@@ -174,8 +184,8 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 				EditText titleAdd = (EditText) activity.findViewById(R.id.titleAddText);
 				EditText artistSearch = (EditText) activity.findViewById(R.id.artistSearchText);
 				EditText titleSearch = (EditText) activity.findViewById(R.id.titleSearchText);
-				Button addButton = (Button) activity.findViewById(R.id.addButton);
-				Button searchButton = (Button) activity.findViewById(R.id.searchButton);
+				ImageButton addButton = (ImageButton) activity.findViewById(R.id.addButton);
+				ImageButton searchButton = (ImageButton) activity.findViewById(R.id.searchButton);
 				if (null != reconnect)
 					reconnect.setEnabled(!b);
 				artistAdd.setEnabled(b);
@@ -251,21 +261,26 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 
 	private void selectSong(Song s) {
 		selectedSong = s;
+		playing = false;
+		paused = false;
 		if (playingSong != null && playingSong.equals(selectedSong)) {
 			if (isLoading) {
-				controlButton.setText(R.string.loading);
+				controlButton.setImageResource(R.drawable.ic_autorenew_white_24dp);
 				controlButton.setEnabled(false);
 			} else {
-				if (mp.isPlaying())
-					controlButton.setText(R.string.pause);
-				else
-					controlButton.setText(R.string.play);
+				if (mp.isPlaying()) {
+					playing = true;
+					controlButton.setImageResource(R.drawable.ic_pause_white_24dp);
+				} else {
+					paused = true;
+					controlButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
+				}
 				controlButton.setEnabled(true);
 			}
 		} else {
-			controlButton.setText(R.string.start);
+			controlButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
 			controlButton.setEnabled(true);
-			removeButton.setText(R.string.remove);
+			removeButton.setImageResource(R.drawable.ic_remove_white_24dp);
 		}
 		removeButton.setEnabled(true);
 	}
@@ -311,7 +326,7 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				controlButton.setText(activity.getString(R.string.loading));
+				controlButton.setImageResource(R.drawable.ic_autorenew_white_24dp);
 				controlButton.setEnabled(false);
 			}
 		});
@@ -322,10 +337,12 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 	public void Pause() {
 		if (token == null || isNotWorking())
 			return;
+		playing = false;
+		paused = true;
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				controlButton.setText(R.string.play);
+				controlButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
 				controlButton.setEnabled(true);
 			}
 		});
@@ -336,10 +353,12 @@ class StreamPlayer implements MediaPlayer.OnPreparedListener {
 		if (token == null || isNotWorking())
 			return;
 		if (selectedSong.equals(playingSong)) {
+			playing = true;
+			paused = false;
 			activity.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					controlButton.setText(activity.getString(R.string.pause));
+					controlButton.setImageResource(R.drawable.ic_pause_white_24dp);
 					controlButton.setEnabled(true);
 				}
 			});

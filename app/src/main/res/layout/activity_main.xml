@@ -31,20 +31,19 @@
         android:hint="@string/title"
         android:singleLine="true"
         android:imeOptions="actionDone"
-        android:layout_alignTop="@+id/artistAddText"
-        android:layout_alignRight="@+id/searchButton"
-        android:layout_alignEnd="@+id/searchButton" />
+        android:layout_alignTop="@+id/artistAddText" android:layout_toRightOf="@+id/artistAddText"
+        android:layout_toEndOf="@+id/artistAddText"/>
 
-    <Button
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/add"
+        android:src="@drawable/ic_add_white_24dp"
         android:enabled="false"
         android:id="@+id/addButton"
         android:imeOptions="actionDone"
-        android:layout_below="@+id/artistAddText"
-        android:layout_centerHorizontal="true"
-        android:onClick="add" />
+        android:onClick="add"
+        android:layout_alignTop="@+id/titleAddText" android:layout_toRightOf="@+id/titleAddText"
+        android:layout_toEndOf="@+id/titleAddText"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -54,11 +53,9 @@
         android:hint="@string/artist"
         android:singleLine="true"
         android:imeOptions="actionNext"
-        android:layout_below="@+id/addButton"
-        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/artistAddText" android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/addButton"
-        android:layout_toLeftOf="@+id/addButton" />
+        android:layout_toStartOf="@+id/titleAddText" android:layout_toLeftOf="@+id/titleAddText"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -68,34 +65,26 @@
         android:singleLine="true"
         android:imeOptions="actionDone"
         android:layout_alignTop="@+id/artistSearchText"
-        android:layout_toRightOf="@+id/artistSearchText"
-        android:layout_toEndOf="@+id/artistSearchText"
-        android:layout_toLeftOf="@+id/searchButton"
-        android:layout_toStartOf="@+id/searchButton"
-        android:hint="@string/title" />
+        android:hint="@string/title" android:layout_toLeftOf="@+id/searchButton"
+        android:layout_toRightOf="@+id/artistAddText" android:layout_toEndOf="@+id/artistAddText"/>
 
-    <Button
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/search"
+        android:src="@drawable/ic_search_white_24dp"
         android:enabled="false"
         android:id="@+id/searchButton"
         android:imeOptions="actionDone"
-        android:layout_alignBottom="@+id/artistSearchText"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="search" />
+        android:onClick="search"
+        android:layout_below="@+id/titleAddText" android:layout_toRightOf="@+id/titleAddText"
+        android:layout_toEndOf="@+id/titleAddText"/>
 
-    <Button
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/select"
-        android:enabled="false"
+        android:src="@drawable/ic_play_arrow_white_24dp"
         android:id="@+id/controlButton"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/artistAddText"
-        android:layout_alignEnd="@+id/artistAddText"
-        android:onClick="play" />
+        android:onClick="play" android:layout_alignBottom="@+id/recordButton" android:layout_centerHorizontal="true"/>
 
     <ListView
         android:layout_width="wrap_content"
@@ -106,16 +95,13 @@
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/controlButton" />
 
-    <Button
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/song"
-        android:enabled="false"
+        android:src="@drawable/ic_remove_white_24dp"
         android:id="@+id/removeButton"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/addButton"
-        android:layout_toEndOf="@+id/addButton"
-        android:onClick="remove" />
+        android:onClick="remove" android:layout_below="@+id/listView" android:layout_alignRight="@+id/searchButton"
+        android:layout_alignEnd="@+id/searchButton"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -130,16 +116,13 @@
         android:layout_alignEnd="@+id/titleAddText"
         android:singleLine="true" />
 
-    <Button
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/record"
         android:id="@+id/recordButton"
+        android:src="@drawable/ic_mic_none_white_24dp"
         android:onClick="record"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_toLeftOf="@+id/controlButton"
-        android:layout_toStartOf="@+id/controlButton" />
+        android:layout_alignParentBottom="true" android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
 
 </RelativeLayout>

@@ -6,7 +6,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
-import android.widget.Button;
+import android.widget.ImageButton;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -21,26 +21,34 @@ import java.util.List;
 
 class BuiltinAudioRecorder implements AudioRecorder {
 	private final MainActivity activity;
-	private final Button recordButton;
+	private final ImageButton recordButton;
 	private SpeechRecognizer asr = null;
 	private Intent intent = null;
+	private boolean recording = false;
 
 	public BuiltinAudioRecorder(MainActivity activity) {
 		this.activity = activity;
-		recordButton = (Button) activity.findViewById(R.id.recordButton);
+		recordButton = (ImageButton) activity.findViewById(R.id.recordButton);
 		asr = SpeechRecognizer.createSpeechRecognizer(activity);
 		asr.setRecognitionListener(new ResultProcessor());
 		intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 	}
 
 	public void record() {
-		recordButton.setText(R.string.stop);
+		recording = true;
+		recordButton.setImageResource(R.drawable.ic_mic_white_24dp);
 		asr.startListening(intent);
 	}
 
 	public void stopRecord() {
-		recordButton.setText(R.string.record);
+		recording = false;
+		recordButton.setImageResource(R.drawable.ic_mic_none_white_24dp);
 		asr.stopListening();
+	}
+
+	@Override
+	public boolean isRecording() {
+		return recording;
 	}
 
 	private class ResultProcessor implements RecognitionListener {
@@ -155,8 +163,7 @@ class BuiltinAudioRecorder implements AudioRecorder {
 			} catch (Exception e) {
 				Log.e("text2command", e.toString());
 			}
-			asr.stopListening();
-			recordButton.setText(R.string.record);
+			stopRecord();
 		}
 
 		@Override

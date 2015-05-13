@@ -4,7 +4,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
-import android.widget.Button;
+import android.widget.ImageButton;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -26,22 +26,24 @@ class SpeeralAudioRecorder implements AudioRecorder {
 	private static final int REC_ENC = AudioFormat.ENCODING_PCM_16BIT;
 	private static int bufferSize;
 	private final MainActivity activity;
-	private final Button recordButton;
+	private final ImageButton recordButton;
 	private AudioRecord recorder = null;
 	private Ice.Communicator communicator = null;
 	private speeral.ServerPrx server = null;
 	private short[] audioData;
 	private int current;
+	private boolean recording = false;
 
 	public SpeeralAudioRecorder(Ice.Communicator communicator, MainActivity activity) {
 		this.communicator = communicator;
 		this.activity = activity;
-		recordButton = (Button) activity.findViewById(R.id.recordButton);
+		recordButton = (ImageButton) activity.findViewById(R.id.recordButton);
 		initServer();
 	}
 
 	public void record() {
-		recordButton.setText(R.string.stop);
+		recording = true;
+		recordButton.setImageResource(R.drawable.ic_mic_white_24dp);
 		bufferSize = AudioRecord.getMinBufferSize(REC_SR, REC_CHAN, REC_ENC);
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 				REC_SR, REC_CHAN,
@@ -71,6 +73,7 @@ class SpeeralAudioRecorder implements AudioRecorder {
 	}
 
 	public void stopRecord() {
+		recording = false;
 		if (recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
 			recorder.stop();
 			new Thread(new Runnable() {
@@ -78,7 +81,7 @@ class SpeeralAudioRecorder implements AudioRecorder {
 					activity.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							recordButton.setText("...");
+							recordButton.setImageResource(R.drawable.ic_autorenew_white_24dp);
 							recordButton.setEnabled(false);
 						}
 					});
@@ -140,11 +143,16 @@ class SpeeralAudioRecorder implements AudioRecorder {
 						@Override
 						public void run() {
 							recordButton.setEnabled(true);
-							recordButton.setText(R.string.record);
+							recordButton.setImageResource(R.drawable.ic_mic_none_white_24dp);
 						}
 					});
 				}
 			}).start();
 		}
+	}
+
+	@Override
+	public boolean isRecording() {
+		return recording;
 	}
 }

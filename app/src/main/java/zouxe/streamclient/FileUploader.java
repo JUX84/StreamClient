@@ -53,11 +53,12 @@ class FileUploader extends AsyncTask<Void, Integer, Void> {
 				byte[] temp = Arrays.copyOfRange(bytes, offset, end);
 				try {
 					publishProgress(offset);
+					Log.v("upload", String.valueOf(offset));
 					server.uploadFile(artist + "." + title, temp);
 				} catch (Exception e) {
 					Log.e("upload", e.toString());
 				}
-				offset += end;
+				offset = end;
 			}
 			dialog.dismiss();
 			sp.addSong(artist, title);

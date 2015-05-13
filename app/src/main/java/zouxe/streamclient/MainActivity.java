@@ -13,10 +13,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.TextView;
+import android.widget.*;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -46,6 +43,10 @@ public class MainActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		ImageButton controlButton = (ImageButton) findViewById(R.id.controlButton);
+		ImageButton removeButton = (ImageButton) findViewById(R.id.removeButton);
+		controlButton.setEnabled(false);
+		removeButton.setEnabled(false);
 		initIce();
 		connect();
 	}
@@ -187,26 +188,22 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void play(View controlView) {
-		Button controlButton = (Button) findViewById(R.id.controlButton);
-		if (controlButton.getText().equals(getString(R.string.pause)))
+		if (sp.isPlaying())
 			sp.Pause();
-		else if (controlButton.getText().equals(getString(R.string.start)))
-			sp.Start();
-		else if (controlButton.getText().equals(getString(R.string.play)))
+		else if (sp.isPaused())
 			sp.Play();
+		else
+			sp.Start();
+
 	}
 
 	public void record(View recordView) {
-		Button recordButton = (Button) findViewById(R.id.recordButton);
-		if (recordButton.getText().equals(getString(R.string.record))) {
-			if (null != recorder) {
-				recorder.record();
-			}
-		} else if (recordButton.getText().equals(getString(R.string.stop))) {
-			if (null != recorder) {
-				recorder.stopRecord();
-			}
-		}
+		if (null == recorder)
+			return;
+		if (recorder.isRecording())
+			recorder.stopRecord();
+		else
+			recorder.record();
 	}
 
 	public void audioPlaySong(String artist, String title) {
